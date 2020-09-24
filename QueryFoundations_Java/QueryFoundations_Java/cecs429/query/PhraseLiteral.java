@@ -5,6 +5,7 @@ import cecs429.index.Posting;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -17,7 +18,7 @@ public class PhraseLiteral implements Query {
 	/**
 	 * Constructs a PhraseLiteral with the given individual phrase terms.
 	 */
-	public PhraseLiteral(Iterable<Query> children) {
+	public PhraseLiteral(Collection<Query> children) {
 		mChildren.addAll(terms);
 	}
 	
