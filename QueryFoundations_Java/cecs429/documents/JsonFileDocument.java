@@ -46,7 +46,7 @@ public class JsonFileDocument implements Json {
 			}
 			Gson gson=new Gson();
 			mJsonObject = gson.fromJson(sb.toString(), GsonDoc.class);
-			return reader;
+			return Files.newBufferedReader(mFilePath); //TO REVISE: Bad way. It reads twice!
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
