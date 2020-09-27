@@ -5,7 +5,7 @@ import java.util.*;
 /**
  * Implements Inverted Index 
  */
-public class inverted implements Index{
+public class InvertedIndex implements Index{
 	private Map<String,ArrayList<Posting>> mIndex= new HashMap<String, ArrayList<Posting>>();
 	private List<String> mVocabulary = new ArrayList<String>();
 	
