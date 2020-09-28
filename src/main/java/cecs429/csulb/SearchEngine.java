@@ -19,6 +19,7 @@ public class SearchEngine {
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
+		System.out.println("Please enter the directory of the file: ");
 		Scanner sc = new Scanner(System.in);
 		String directory = sc.nextLine();
 		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".json");
