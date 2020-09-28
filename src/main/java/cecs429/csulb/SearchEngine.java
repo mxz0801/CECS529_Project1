@@ -9,7 +9,6 @@ import main.java.cecs429.index.*;
 import main.java.cecs429.text.*;
 
 
-
 public class SearchEngine {
 
 	public static void main(String[] args) throws IOException {
