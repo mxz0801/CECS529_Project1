@@ -1,4 +1,4 @@
-package cecs429.documents;
+package main.java.cecs429.documents;
 
 
 public interface Json extends FileDocument {

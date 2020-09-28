@@ -1,4 +1,4 @@
-package cecs429.text;
+package main.java.cecs429.text;
 
 /**
  * A BasicTokenProcessor creates terms from tokens by removing all non-alphanumeric characters from the token, and

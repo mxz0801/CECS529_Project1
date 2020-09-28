@@ -1,4 +1,4 @@
-package cecs429.index;
+package main.java.cecs429.index;
 
 import java.util.ArrayList;
 

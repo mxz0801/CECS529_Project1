@@ -1,4 +1,4 @@
-package cecs429.documents;
+package main.java.cecs429.documents;
 
 import java.io.Reader;
 

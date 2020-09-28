@@ -1,4 +1,4 @@
-package cecs429.text;
+package main.java.cecs429.text;
 
 import java.io.IOException;
 import java.io.Reader;

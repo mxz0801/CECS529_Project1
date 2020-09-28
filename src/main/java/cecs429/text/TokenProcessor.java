@@ -1,4 +1,4 @@
-package cecs429.text;
+package main.java.cecs429.text;
 
 /**
  * A TokenProcessor applies some rules of normalization to a token from a document, and returns a term for that token.

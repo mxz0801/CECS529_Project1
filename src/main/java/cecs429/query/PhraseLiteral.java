@@ -1,11 +1,12 @@
-package cecs429.query;
+package main.java.cecs429.query;
 
-import cecs429.index.Index;
-import cecs429.index.Posting;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import main.java.cecs429.index.Index;
+import main.java.cecs429.index.Posting;
 
 /**
  * Represents a phrase literal consisting of one or more terms that must occur in sequence.
