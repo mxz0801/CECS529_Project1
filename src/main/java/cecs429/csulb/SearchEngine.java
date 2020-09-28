@@ -1,14 +1,19 @@
-package main.java.cecs429.csulb;
+package cecs429.csulb;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
-import main.java.cecs429.documents.*;
-import main.java.cecs429.index.*;
-import main.java.cecs429.text.*;
-
-
+import cecs429.documents.DirectoryCorpus;
+import cecs429.documents.Document;
+import cecs429.documents.DocumentCorpus;
+import cecs429.index.Index;
+import cecs429.index.PositionalInvertedIndex;
+import cecs429.index.Posting;
+import cecs429.text.BasicTokenProcessor;
+import cecs429.text.EnglishTokenStream;
+import cecs429.text.TokenStream;
 
 public class SearchEngine {
 
