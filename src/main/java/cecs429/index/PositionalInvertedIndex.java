@@ -6,7 +6,7 @@ import java.util.*;
  */
 
 public class PositionalInvertedIndex implements Index {
-	private Map<String,List<Posting>> mIndex= new HashMap<String, List<Posting>>();
+	private Map<String,ArrayList<Posting>> mIndex= new HashMap<String, ArrayList<Posting>>();
 	private List<String> mVocabulary = new ArrayList<String>();
 	
 	/**
