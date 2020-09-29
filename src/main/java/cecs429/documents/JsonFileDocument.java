@@ -68,7 +68,7 @@ public class JsonFileDocument implements FileDocument {
 		return gsonDoc.getBody();
 	}
 
-	public static FileDocument loadTextFileDocument(Path absolutePath, int documentId) {
+	public static FileDocument loadJsonFileDocument(Path absolutePath, int documentId) {
 		return new JsonFileDocument(documentId, absolutePath);
 	}
 }
