@@ -1,4 +1,4 @@
-package main.java.cecs429.text;
+package cecs429.text;
 
 public class ImprovedTokenProcessor implements TokenProcessor {
 	@Override

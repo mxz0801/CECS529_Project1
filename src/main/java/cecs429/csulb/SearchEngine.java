@@ -1,12 +1,12 @@
-package main.java.cecs429.csulb;
+package cecs429.csulb;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
-import main.java.cecs429.documents.*;
-import main.java.cecs429.index.*;
-import main.java.cecs429.text.*;
+import cecs429.documents.*;
+import cecs429.index.*;
+import cecs429.text.*;
 
 
 public class SearchEngine {

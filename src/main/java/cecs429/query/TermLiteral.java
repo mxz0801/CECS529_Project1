@@ -1,11 +1,11 @@
-package main.java.cecs429.query;
+package cecs429.query;
 
 
 
 import java.util.List;
 
-import main.java.cecs429.index.Index;
-import main.java.cecs429.index.Posting;
+import cecs429.index.Index;
+import cecs429.index.Posting;
 
 /**
  * A TermLiteral represents a single term in a subquery.
