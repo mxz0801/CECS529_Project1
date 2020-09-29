@@ -11,7 +11,7 @@ import com.google.gson.Gson;
 /**
  * Represents a document that is saved as a json file in the local file system.
  */
-public class JsonFileDocument implements Json {
+public class JsonFileDocument implements FileDocument {
 	private int mDocumentId;
 	private Path mFilePath;
     private GsonDoc gsonDoc;
@@ -60,12 +60,10 @@ public class JsonFileDocument implements Json {
 		return mFilePath.getFileName().toString();
 	}
 
-	@Override
 	public String getJsonTitle() {
 		return gsonDoc.getTitle();
 	}
 
-	@Override
 	public String getJsonBody() {
 		return gsonDoc.getBody();
 	}

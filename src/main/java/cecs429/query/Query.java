@@ -1,7 +1,9 @@
 package cecs429.query;
-import cecs429.index.*;
 
 import java.util.List;
+
+import cecs429.index.Index;
+import cecs429.index.Posting;
 
 /**
  * A Query is a piece or whole of a Boolean query, whether that piece is a literal string or represents a merging of
