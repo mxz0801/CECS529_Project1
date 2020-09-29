@@ -39,11 +39,12 @@ public class TextFileDocument implements FileDocument {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	@Override
 	public String getFileTitle() {
 		return mFilePath.getFileName().toString();
 	}
+
 	
 	public static FileDocument loadTextFileDocument(Path absolutePath, int documentId) {
 		return new TextFileDocument(documentId, absolutePath);

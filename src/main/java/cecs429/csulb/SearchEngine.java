@@ -1,6 +1,7 @@
 package cecs429.csulb;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
@@ -16,7 +17,8 @@ public class SearchEngine {
 		System.out.println("Please enter the directory of the file: ");
 		Scanner sc = new Scanner(System.in);
 		String directory = sc.nextLine();
-		DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".json");
+		DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json");   //read json file
+			//DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
 		System.out.println(corpus.getCorpusSize());
 		Index index = indexCorpus(corpus) ;
 		System.out.println(index.getVocabulary());
@@ -37,13 +39,24 @@ public class SearchEngine {
 		}
 		sc.close();
 	}
+
+	private static String getFileExtension(Path file) {
+		String fileName = file.getFileName().toString();
+		String extension = fileName.substring(fileName.lastIndexOf('.') + 1);
+		return "." + extension;
+	}
+
 	private static Index indexCorpus(DocumentCorpus corpus) throws IOException {
 		BasicTokenProcessor processor = new BasicTokenProcessor();
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		for(Document sDocument : corpus.getDocuments()) {
 				System.out.println("Indexing file " + sDocument.getFileTitle());
 				TokenStream stream = new EnglishTokenStream(sDocument.getContent());
-				Iterable<String> token = stream.getTokens();
+//				System.out.println("json title " + sDocument.getJsonTitle());
+//				System.out.println("json body " + sDocument.getJsonBody());
+
+
+			Iterable<String> token = stream.getTokens();
 				int position = 1;
 				for(String t : token) {
 					String word = processor.processToken(t);
