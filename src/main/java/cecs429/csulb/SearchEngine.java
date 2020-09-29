@@ -3,6 +3,7 @@ package cecs429.csulb;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Scanner;
 
 import cecs429.documents.*;
@@ -30,10 +31,15 @@ public class SearchEngine {
 				break;
 			}
 			else {
-				for (Posting p : index.getPostings(query)) {
-					System.out.println("Document " + corpus.getDocument(p.getDocumentId()).getFileTitle());
-					System.out.println(p.getPosition());
+				try {
+					for (Posting p : index.getPostings(query)) {
+						System.out.println("Document " + corpus.getDocument(p.getDocumentId()).getFileTitle());
+						System.out.println(p.getPosition());
+					}
+				}catch (Exception e){
+					System.out.println("Doesn't exist");
 				}
+
 			}
 			
 		}
@@ -47,7 +53,7 @@ public class SearchEngine {
 	}
 
 	private static Index indexCorpus(DocumentCorpus corpus) throws IOException {
-		BasicTokenProcessor processor = new BasicTokenProcessor();
+		ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		for(Document sDocument : corpus.getDocuments()) {
 				System.out.println("Indexing file " + sDocument.getFileTitle());
@@ -59,10 +65,13 @@ public class SearchEngine {
 			Iterable<String> token = stream.getTokens();
 				int position = 1;
 				for(String t : token) {
-					String word = processor.processToken(t);
-					if (word.length() > 0) {
-						index.addTerm(word, sDocument.getId(), position);
-						position++;
+					List<String> word = processor.processToken(t);
+					if (word.size() > 0) {
+						for(int i=0;i<word.size();i++){
+							index.addTerm(word.get(i), sDocument.getId(), position);
+							position++;
+						}
+
 					}
 				}
 				stream.close();

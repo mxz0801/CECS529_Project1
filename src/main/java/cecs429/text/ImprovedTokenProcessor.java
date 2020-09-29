@@ -1,9 +1,36 @@
 package cecs429.text;
 
+import java.util.*;
+
 public class ImprovedTokenProcessor implements TokenProcessor {
 	@Override
-	public String processToken(String token) {
-		return token.replaceAll("\\W", "").toLowerCase();
+	public List<String> processToken(String token) {
+		List<String> processedToken = new ArrayList<>();
+		if(token.contains("-")){
+			processedToken.add(token.replaceAll("\\-",""));
+			String[] temp = token.split("-");
+			for(int i=0;i<temp.length;i++){
+				processedToken.add(temp[i]);
+			}
+		}else{
+			processedToken.add(token);
+		}
+		for(int i=0;i<processedToken.size();i++){
+			String tempProcess = processedToken.get(i).replaceAll("\\W", "");
+			tempProcess = tempProcess.replaceAll("^[^a-zA-Z0-9\\s]+|[^a-zA-Z0-9\\s]+$", "").toLowerCase();
+			tempProcess = tempProcess.replaceAll("['\"]", "");
+
+			processedToken.remove(i);
+			processedToken.add(i,tempProcess);
+		}
+		//all non-alphanumeric characters from the beginning and end of the token
+
+		//processedToken.add(processedToken.replaceAll("['\"]", ""));
+		//remove apostropes and quotation marks
+		return processedToken;
+
+
 	}
+
 
 }
