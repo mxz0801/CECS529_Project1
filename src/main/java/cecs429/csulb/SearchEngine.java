@@ -13,15 +13,17 @@ import cecs429.text.*;
 
 public class SearchEngine {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
 		// TODO Auto-generated method stub
 		System.out.println("Please enter the directory of the file: ");
 		Scanner sc = new Scanner(System.in);
 		String directory = sc.nextLine();
-		DocumentCorpus corpus = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json");   //read json file
-			//DocumentCorpus corpus = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
-		System.out.println(corpus.getCorpusSize());
-		Index index = indexCorpus(corpus) ;
+		DocumentCorpus corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json");   //read json file
+		DocumentCorpus corpusTxt = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
+		System.out.println(corpusJs.getCorpusSize());
+		Index index = indexCorpus(corpusJs) ;
+		Index indexTxt = indexCorpus(corpusTxt) ;
+
 		System.out.println(index.getVocabulary());
 		while(true){
 			System.out.print("Pleas enter the term to search for: ");
@@ -33,8 +35,12 @@ public class SearchEngine {
 			else {
 				try {
 					for (Posting p : index.getPostings(query)) {
-						System.out.println("Document " + corpus.getDocument(p.getDocumentId()).getFileTitle());
+						System.out.println("Document " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
 						System.out.println(p.getPosition());
+					}
+					for(Posting pTxt:indexTxt.getPostings(query)){
+						System.out.println("Document " + corpusTxt.getDocument(pTxt.getDocumentId()).getFileTitle());
+						System.out.println(pTxt.getPosition());
 					}
 				}catch (Exception e){
 					System.out.println("Doesn't exist");
@@ -52,7 +58,7 @@ public class SearchEngine {
 		return "." + extension;
 	}
 
-	private static Index indexCorpus(DocumentCorpus corpus) throws IOException {
+	private static Index indexCorpus(DocumentCorpus corpus) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		for(Document sDocument : corpus.getDocuments()) {
