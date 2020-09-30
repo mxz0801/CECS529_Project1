@@ -52,12 +52,6 @@ public class SearchEngine {
 		sc.close();
 	}
 
-	private static String getFileExtension(Path file) {
-		String fileName = file.getFileName().toString();
-		String extension = fileName.substring(fileName.lastIndexOf('.') + 1);
-		return "." + extension;
-	}
-
 	private static Index indexCorpus(DocumentCorpus corpus) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
