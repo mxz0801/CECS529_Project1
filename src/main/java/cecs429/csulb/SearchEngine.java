@@ -24,7 +24,7 @@ public class SearchEngine {
 		Index indexJs = indexCorpus(corpusJs) ;
 		Index indexTxt = indexCorpus(corpusTxt) ;
 
-		System.out.println(indexJs.getVocabulary());
+		System.out.println(indexTxt.getVocabulary());
 		while(true){
 			System.out.print("Pleas enter the term to search for: ");
 			String query = sc.nextLine();
@@ -38,12 +38,15 @@ public class SearchEngine {
 						System.out.println("Document " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
 						System.out.println(p.getPosition());
 					}
+
+				}catch (Exception e) {
+				}
+				try{
 					for(Posting pTxt:indexTxt.getPostings(query)){
 						System.out.println("Document " + corpusTxt.getDocument(pTxt.getDocumentId()).getFileTitle());
 						System.out.println(pTxt.getPosition());
 					}
-				}catch (Exception e){
-					System.out.println("Doesn't exist");
+				}catch (Exception e) {
 				}
 
 			}
