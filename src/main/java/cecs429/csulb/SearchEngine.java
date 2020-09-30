@@ -58,8 +58,7 @@ public class SearchEngine {
 		for(Document sDocument : corpus.getDocuments()) {
 				System.out.println("Indexing file " + sDocument.getFileTitle());
 				TokenStream stream = new EnglishTokenStream(sDocument.getContent());
-//				System.out.println("json title " + sDocument.getJsonTitle());
-//				System.out.println("json body " + sDocument.getJsonBody());
+
 
 
 			Iterable<String> token = stream.getTokens();
