@@ -34,12 +34,13 @@ public class SearchEngine {
 
 		long startTime = System.currentTimeMillis();
 		System.out.println("Timer started");
-		DocumentCorpus corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json");   //read json file
-		DocumentCorpus corpusTxt = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
+		DocumentCorpus corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json",".txt");   //read json file
+		//DocumentCorpus corpusTxt = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
+//		DocumentCorpus combinedCorpus = DirectoryCorpus.loadDirctory(corpusJs,corpusTxt);
 
 		//System.out.println(corpusJs.getCorpusSize());
 		Index indexJs = indexCorpus(corpusJs) ;
-		Index indexTxt = indexCorpus(corpusTxt);
+		//Index indexTxt = indexCorpus(corpusTxt);
 		long endTime = System.currentTimeMillis();
 		System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
 		while(true){
@@ -56,9 +57,9 @@ public class SearchEngine {
 				System.out.println(stemToken + "-->" + processedToken);
 			}else if(query.equals(":vocab")){
 				for(int i=0;i<100;i++){
-					System.out.println(indexTxt.getVocabulary().get(i));
+					System.out.println(indexJs.getVocabulary().get(i));
 				}
-				System.out.println(indexTxt.getVocabulary().size()+indexJs.getVocabulary().size());
+				System.out.println(indexJs.getVocabulary().size());
 			}
 			else {
 				try {
@@ -71,16 +72,16 @@ public class SearchEngine {
 					}
 				}catch (Exception e) {
 				}
-				try{
-					String str = query.toLowerCase();
-					BooleanQueryParser parser = new BooleanQueryParser();
-					Query queryPosting = parser.parseQuery(str);
-					for(Posting pTxt : queryPosting.getPostings(indexTxt)){
-						System.out.println("Document: " + corpusTxt.getDocument(pTxt.getDocumentId()).getFileTitle());
-						System.out.println(pTxt.getPosition());
-					}
-				}catch (Exception e) {
-				}
+//				try{
+//					String str = query.toLowerCase();
+//					BooleanQueryParser parser = new BooleanQueryParser();
+//					Query queryPosting = parser.parseQuery(str);
+//					for(Posting pTxt : queryPosting.getPostings(indexTxt)){
+//						System.out.println("Document: " + corpusTxt.getDocument(pTxt.getDocumentId()).getFileTitle());
+//						System.out.println(pTxt.getPosition());
+//					}
+//				}catch (Exception e) {
+//				}
 			}
 			
 		}

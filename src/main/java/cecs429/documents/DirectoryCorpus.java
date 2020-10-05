@@ -139,31 +139,30 @@ public class DirectoryCorpus implements DocumentCorpus {
 	 * Registers a factory method for loading documents of the given file extension. By default, a corpus
 	 * does not know how to load any files -- this method must be called prior to getDocuments().
 	 */
-	public void registerFileDocumentFactory(String fileExtension, FileDocumentFactory factory) {
+	public void registerFileDocumentFactory(String fileExtension, FileDocumentFactory factory,String fileExtension2, FileDocumentFactory factory2) {
 		mFactories.put(fileExtension, factory);
+		mFactories.put(fileExtension2, factory2);
 	}
 	
 	/**
 	 * Constructs a corpus over a directory of simple text documents.
 	 * @param fileExtension The extension of the text documents to load, e.g., ".txt".
 	 */
-	public static DirectoryCorpus loadTextDirectory(Path absolutePath, String fileExtension) {
-		DirectoryCorpus corpus = new DirectoryCorpus(absolutePath);
-		corpus.registerFileDocumentFactory(fileExtension, TextFileDocument::loadTextFileDocument);
-		return corpus;
-	}
+//	public static DirectoryCorpus loadTextDirectory(Path absolutePath, String fileExtension) {
+//		DirectoryCorpus corpus = new DirectoryCorpus(absolutePath);
+//		corpus.registerFileDocumentFactory(fileExtension, TextFileDocument::loadTextFileDocument);
+//		return corpus;
+//	}
 
 	/**
 	 * Constructs a corpus over a directory of simple json documents.
 	 * @param fileExtension The extension of the text documents to load, e.g., ".json".
 	 */
-	public static DirectoryCorpus loadJsonDirectory(Path absolutePath, String fileExtension) {
+	public static DirectoryCorpus loadJsonDirectory(Path absolutePath, String fileExtension, String fileExtension2) {
 		DirectoryCorpus corpus = new DirectoryCorpus(absolutePath);
-		corpus.registerFileDocumentFactory(fileExtension, JsonFileDocument::loadJsonFileDocument);
+		corpus.registerFileDocumentFactory(fileExtension, JsonFileDocument::loadJsonFileDocument,fileExtension2,TextFileDocument::loadTextFileDocument);
 		return corpus;
 	}
 
-//	public static DirectoryCorpus combineCorpus(DirectoryCorpus Js, DirectoryCorpus txt){
-//		DirectoryCorpus combined = Js + txt;
-//	}
+
 }
