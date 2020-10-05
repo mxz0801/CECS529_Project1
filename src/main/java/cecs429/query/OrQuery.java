@@ -24,6 +24,7 @@ public class OrQuery implements Query {
 	@Override
 	public List<Posting> getPostings(Index index) {
 		List<Posting> result = null;
+		List<Posting> bufferList = new ArrayList<>();
 
 		// TODO: program the merge for an OrQuery, by gathering the postings of the composed Query children and
 		// unioning the resulting postings.
@@ -33,38 +34,37 @@ public class OrQuery implements Query {
 				result = index.getPostings(q.toString());
 				continue;
 			}
-			List<Posting> bufferList = new ArrayList<>(result);
-			result.clear();
+			//result.clear();
 			int i = 0;
 			int j = 0;
-			while(i <= bufferList.size() && j <= index.getPostings(q.toString()).size()){
-				if(i == bufferList.size()){
+			while(i <= result.size() && j <= index.getPostings(q.toString()).size()){
+				if(i == result.size()){
 					for(; j< index.getPostings(q.toString()).size(); j++)
-						result.add(index.getPostings(q.toString()).get(j));
+						bufferList.add(index.getPostings(q.toString()).get(j));
 					break;
 				}
 				else if(j == index.getPostings(q.toString()).size()){
-					for(; i< bufferList.size(); i++)
-						result.add(bufferList.get(i));
+					for(; i< result.size(); i++)
+						bufferList.add(result.get(i));
 					break;
 				}
 
-				if(bufferList.get(i).getDocumentId() == index.getPostings(q.toString()).get(j).getDocumentId()) {
-					result.add(bufferList.get(i));
+				if(result.get(i).getDocumentId() == index.getPostings(q.toString()).get(j).getDocumentId()) {
+					bufferList.add(result.get(i));
 					i++;
 					j++;
 				}
-				else if(bufferList.get(i).getDocumentId() < index.getPostings(q.toString()).get(j).getDocumentId()) {
-					result.add(bufferList.get(i));
+				else if(result.get(i).getDocumentId() < index.getPostings(q.toString()).get(j).getDocumentId()) {
+					bufferList.add(result.get(i));
 					i++;
 				}
-				else  if(bufferList.get(i).getDocumentId() > index.getPostings(q.toString()).get(j).getDocumentId()) {
-					result.add(index.getPostings(q.toString()).get(j));
+				else  if(result.get(i).getDocumentId() > index.getPostings(q.toString()).get(j).getDocumentId()) {
+					bufferList.add(index.getPostings(q.toString()).get(j));
 					j++;
 				}
 			}
 		}
-		return result;
+		return bufferList;
 	}
 	
 	@Override

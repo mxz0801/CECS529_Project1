@@ -16,18 +16,18 @@ public class SearchEngine {
 
 	public static void main(String[] args) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
 		// TODO Auto-generated method stub
-		String abc ="dddddDHKJHF";
-		abc.toLowerCase();
-		System.out.println(abc);
-		List<Integer> result = new ArrayList<>();
-		result.add(1);
-		result.add(2);
-		List<Integer> bufferList = new ArrayList<>(result);
-		result.clear();
-		System.out.println(bufferList);
-		bufferList.add(333);
-		System.out.println(result);
-		System.out.println(bufferList);
+//		String abc ="dddddDHKJHF";
+//		abc.toLowerCase();
+//		System.out.println(abc);
+//		List<Integer> result = new ArrayList<>();
+//		result.add(1);
+//		result.add(2);
+//		List<Integer> bufferList = new ArrayList<>(result);
+//		result.clear();
+//		System.out.println(bufferList);
+//		bufferList.add(333);
+//		System.out.println(result);
+//		System.out.println(bufferList);
 		System.out.println("Please enter the directory of the file: ");
 		Scanner sc = new Scanner(System.in);
 		String directory = sc.nextLine();
@@ -50,7 +50,7 @@ public class SearchEngine {
 				System.out.println("Exit the search.");
 				break;
 			}else if(query.contains(":stem")){
-				String spliter[] = query.split(" ");
+				String[] spliter = query.split(" ");
 				String stemToken = spliter[1];
 				ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
 				String processedToken = processor2.stem(stemToken);
@@ -70,6 +70,7 @@ public class SearchEngine {
 						System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
 						System.out.println(p.getPosition());
 					}
+
 				}catch (Exception e) {
 				}
 //				try{
