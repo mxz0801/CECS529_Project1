@@ -41,7 +41,7 @@ public class SearchEngine {
 		Index indexJs = indexCorpus(corpusJs) ;
 		Index indexTxt = indexCorpus(corpusTxt) ;
 		long endTime = System.currentTimeMillis();
-		System.out.println("It took " + (endTime - startTime) + " milliseconds");
+		System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
 		while(true){
 			System.out.print("Pleas enter the term to search for: ");
 			String query = sc.next();
