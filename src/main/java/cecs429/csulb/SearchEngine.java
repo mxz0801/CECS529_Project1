@@ -33,17 +33,26 @@ public class SearchEngine {
 		String directory = sc.nextLine();
 		DocumentCorpus corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json");   //read json file
 		DocumentCorpus corpusTxt = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
-		System.out.println(corpusJs.getCorpusSize());
+
+		//System.out.println(corpusJs.getCorpusSize());
 		Index indexJs = indexCorpus(corpusJs) ;
 		Index indexTxt = indexCorpus(corpusTxt) ;
-
-		System.out.println(indexJs.getVocabulary());
 		while(true){
 			System.out.print("Pleas enter the term to search for: ");
-			String query = sc.nextLine();
+			String query = sc.next();
 			if(query.equals("quit")) {
 				System.out.println("Exit the search.");
 				break;
+			}else if(query.equals(":stem")){
+				String stemToken = sc.next();
+				ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
+				String processedToken = processor2.stem(stemToken);
+				System.out.println(stemToken + "-->" + processedToken);
+			}else if(query.equals(":vocab")){
+				for(int i=0;i<100;i++){
+					System.out.println(indexTxt.getVocabulary().get(i));
+				}
+				System.out.println(indexTxt.getVocabulary().size());
 			}
 			else {
 				try {
@@ -51,10 +60,9 @@ public class SearchEngine {
 					BooleanQueryParser parser = new BooleanQueryParser();
 					Query queryPosting = parser.parseQuery(str);
 					for (Posting p : queryPosting.getPostings(indexJs)) {
-						System.out.println("Document " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
+						System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
 						System.out.println(p.getPosition());
 					}
-
 				}catch (Exception e) {
 				}
 				try{
@@ -62,12 +70,11 @@ public class SearchEngine {
 					BooleanQueryParser parser = new BooleanQueryParser();
 					Query queryPosting = parser.parseQuery(str);
 					for(Posting pTxt : queryPosting.getPostings(indexTxt)){
-						System.out.println("Document " + corpusTxt.getDocument(pTxt.getDocumentId()).getFileTitle());
+						System.out.println("Document: " + corpusTxt.getDocument(pTxt.getDocumentId()).getFileTitle());
 						System.out.println(pTxt.getPosition());
 					}
 				}catch (Exception e) {
 				}
-
 			}
 			
 		}
@@ -78,8 +85,8 @@ public class SearchEngine {
 		ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		for(Document sDocument : corpus.getDocuments()) {
-				System.out.println("Indexing file " + sDocument.getFileTitle());
 				TokenStream stream = new EnglishTokenStream(sDocument.getContent());
+				System.out.println("Indexing file " + sDocument.getFileTitle());
 
 
 

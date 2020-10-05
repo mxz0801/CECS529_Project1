@@ -162,4 +162,8 @@ public class DirectoryCorpus implements DocumentCorpus {
 		corpus.registerFileDocumentFactory(fileExtension, JsonFileDocument::loadJsonFileDocument);
 		return corpus;
 	}
+
+//	public static DirectoryCorpus combineCorpus(DirectoryCorpus Js, DirectoryCorpus txt){
+//		DirectoryCorpus combined = Js + txt;
+//	}
 }

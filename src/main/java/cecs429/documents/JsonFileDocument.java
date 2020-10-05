@@ -57,7 +57,7 @@ public class JsonFileDocument implements FileDocument {
 
 	@Override
 	public String getFileTitle() {
-		return mFilePath.getFileName().toString();
+		return gsonDoc.getTitle() + " ("+mFilePath.getFileName().toString()+ ")";
 	}
 
 	public String getJsonTitle() {
