@@ -61,6 +61,7 @@ public class SearchEngine {
 			}
 			else {
 				try {
+					query = query+sc.nextLine();
 					String str = query.toLowerCase();
 					BooleanQueryParser parser = new BooleanQueryParser();
 					Query queryPosting = parser.parseQuery(str);
