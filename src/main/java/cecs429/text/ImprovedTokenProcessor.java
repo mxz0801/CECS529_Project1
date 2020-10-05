@@ -19,7 +19,8 @@ public class ImprovedTokenProcessor implements TokenProcessor {
 		}else{
 			processedToken.add(token);
 		}
-		for(int i=0;i<processedToken.size();i++){
+		int size = processedToken.size();
+		for(int i=0;i<size;i++){
 			String tempProcess = processedToken.get(i).replaceAll("\\W", "")
 					.replaceAll("^[^a-zA-Z0-9\\s]+|[^a-zA-Z0-9\\s]+$", "").replaceAll("['\"]", "").toLowerCase();
 			//tempProcess = tempProcess.replaceAll("^[^a-zA-Z0-9\\s]+|[^a-zA-Z0-9\\s]+$", "").toLowerCase();
@@ -27,7 +28,8 @@ public class ImprovedTokenProcessor implements TokenProcessor {
 			stemmer.setCurrent(tempProcess);
 			stemmer.stem();
 			processedToken.remove(i);
-			processedToken.add(i,stemmer.getCurrent());
+			processedToken.add(i,tempProcess);
+			processedToken.add(stemmer.getCurrent());
 		}
 		//all non-alphanumeric characters from the beginning and end of the token
 

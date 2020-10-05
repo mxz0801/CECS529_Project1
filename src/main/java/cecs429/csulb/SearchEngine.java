@@ -37,7 +37,7 @@ public class SearchEngine {
 		Index indexJs = indexCorpus(corpusJs) ;
 		Index indexTxt = indexCorpus(corpusTxt) ;
 
-		System.out.println(indexTxt.getVocabulary());
+		System.out.println(indexJs.getVocabulary());
 		while(true){
 			System.out.print("Pleas enter the term to search for: ");
 			String query = sc.nextLine();
