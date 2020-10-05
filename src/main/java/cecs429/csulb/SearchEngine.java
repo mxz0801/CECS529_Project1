@@ -47,7 +47,10 @@ public class SearchEngine {
 			}
 			else {
 				try {
-					for (Posting p : indexJs.getPostings(query)) {
+					String str = query.toLowerCase();
+					BooleanQueryParser parser = new BooleanQueryParser();
+					Query queryPosting = parser.parseQuery(str);
+					for (Posting p : queryPosting.getPostings(indexJs)) {
 						System.out.println("Document " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
 						System.out.println(p.getPosition());
 					}
