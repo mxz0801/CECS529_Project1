@@ -31,12 +31,17 @@ public class SearchEngine {
 		System.out.println("Please enter the directory of the file: ");
 		Scanner sc = new Scanner(System.in);
 		String directory = sc.nextLine();
+
+		long startTime = System.currentTimeMillis();
+		System.out.println("Timer started");
 		DocumentCorpus corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json");   //read json file
 		DocumentCorpus corpusTxt = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
 
 		//System.out.println(corpusJs.getCorpusSize());
 		Index indexJs = indexCorpus(corpusJs) ;
 		Index indexTxt = indexCorpus(corpusTxt) ;
+		long endTime = System.currentTimeMillis();
+		System.out.println("It took " + (endTime - startTime) + " milliseconds");
 		while(true){
 			System.out.print("Pleas enter the term to search for: ");
 			String query = sc.next();
