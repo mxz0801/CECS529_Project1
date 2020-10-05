@@ -58,7 +58,7 @@ public class SearchEngine {
 				for(int i=0;i<100;i++){
 					System.out.println(indexTxt.getVocabulary().get(i));
 				}
-				System.out.println(indexTxt.getVocabulary().size());
+				System.out.println(indexTxt.getVocabulary().size()+indexJs.getVocabulary().size());
 			}
 			else {
 				try {
@@ -93,9 +93,6 @@ public class SearchEngine {
 		for(Document sDocument : corpus.getDocuments()) {
 				TokenStream stream = new EnglishTokenStream(sDocument.getContent());
 				System.out.println("Indexing file " + sDocument.getFileTitle());
-
-
-
 			Iterable<String> token = stream.getTokens();
 				int position = 1;
 				for(String t : token) {
@@ -105,7 +102,6 @@ public class SearchEngine {
 							index.addTerm(word.get(i), sDocument.getId(), position);
 							position++;
 						}
-
 					}
 				}
 				stream.close();
