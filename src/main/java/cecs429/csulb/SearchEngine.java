@@ -3,11 +3,12 @@ package cecs429.csulb;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 import cecs429.documents.*;
 import cecs429.index.*;
+import cecs429.query.BooleanQueryParser;
+import cecs429.query.Query;
 import cecs429.text.*;
 
 
@@ -15,6 +16,18 @@ public class SearchEngine {
 
 	public static void main(String[] args) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
 		// TODO Auto-generated method stub
+		String abc ="dddddDHKJHF";
+		abc.toLowerCase();
+		System.out.println(abc);
+		List<Integer> result = new ArrayList<>();
+		result.add(1);
+		result.add(2);
+		List<Integer> bufferList = new ArrayList<>(result);
+		result.clear();
+		System.out.println(bufferList);
+		bufferList.add(333);
+		System.out.println(result);
+		System.out.println(bufferList);
 		System.out.println("Please enter the directory of the file: ");
 		Scanner sc = new Scanner(System.in);
 		String directory = sc.nextLine();
@@ -42,7 +55,10 @@ public class SearchEngine {
 				}catch (Exception e) {
 				}
 				try{
-					for(Posting pTxt:indexTxt.getPostings(query)){
+					String str = query.toLowerCase();
+					BooleanQueryParser parser = new BooleanQueryParser();
+					Query queryPosting = parser.parseQuery(str);
+					for(Posting pTxt : queryPosting.getPostings(indexTxt)){
 						System.out.println("Document " + corpusTxt.getDocument(pTxt.getDocumentId()).getFileTitle());
 						System.out.println(pTxt.getPosition());
 					}

@@ -3,6 +3,7 @@ package cecs429.query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import cecs429.index.Index;
@@ -31,9 +32,49 @@ public class PhraseLiteral implements Query {
 	
 	@Override
 	public List<Posting> getPostings(Index index) {
-		return null;
+
 		// TODO: program this method. Retrieve the postings for the individual terms in the phrase,
 		// and positional merge them together.
+
+		List<Posting> result = null;
+		int gapOfDoc = 1; // use it to find the position
+		for (String s : mTerms) {
+			if (s == mTerms.get(0)) {
+				result = index.getPostings(s);
+				continue;
+			}
+			int i = 0;
+			int j = 0;
+			List<Posting> bufferList = new ArrayList<>(result);
+			result.clear();
+			// compare the docID in each two terms
+			while (i < bufferList.size() && j < index.getPostings(s).size()) {
+				//find the same docID
+				if (bufferList.get(i).getDocumentId() == index.getPostings(s).get(j).getDocumentId()) {
+					int m = 0;
+					int n = 0;
+
+					// compare the position
+					while (m < bufferList.get(i).getPosition().size() && n < index.getPostings(s).get(j).getPosition().size()) {
+						//find the position with phrase's order
+						if (index.getPostings(s).get(j).getPosition().get(n) == bufferList.get(i).getPosition().get(m) + gapOfDoc) {
+							result.add(bufferList.get(i));
+							gapOfDoc++;
+						} else if (index.getPostings(s).get(j).getPosition().get(n) <= bufferList.get(i).getPosition().get(m))
+							n++;
+						else if (index.getPostings(s).get(j).getPosition().get(n) > bufferList.get(i).getPosition().get(m))
+							m++;
+					}
+					i++;
+					j++;
+				}
+				else if (result.get(i).getDocumentId() < index.getPostings(s).get(j).getDocumentId())
+					i++;
+				else if (result.get(i).getDocumentId() > index.getPostings(s).get(j).getDocumentId())
+					j++;
+			}
+		}
+		return result;
 	}
 	
 	@Override

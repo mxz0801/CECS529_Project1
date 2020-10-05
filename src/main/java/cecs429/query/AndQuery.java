@@ -2,13 +2,12 @@ package cecs429.query;
 
 
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import cecs429.index.Index;
 import cecs429.index.Posting;
+import javafx.geometry.Pos;
 
 /**
  * An AndQuery composes other Query objects and merges their postings in an intersection-like operation.
@@ -26,7 +25,27 @@ public class AndQuery implements Query {
 		
 		// TODO: program the merge for an AndQuery, by gathering the postings of the composed QueryComponents and
 		// intersecting the resulting postings.
-		
+		for(Query q : mChildren){
+			if(q == mChildren.get(0)) {
+				result = index.getPostings(q.toString());
+				continue;
+			}
+			List<Posting> bufferList = new ArrayList<>(result);
+			result.clear();
+			int i = 0;
+			int j = 0;
+			while(i < bufferList.size() && j < index.getPostings(q.toString()).size()){
+				if(bufferList.get(i).getDocumentId() == index.getPostings(q.toString()).get(j).getDocumentId()) {
+					result.add(bufferList.get(i));
+					i++;
+					j++;
+				}
+				else if(bufferList.get(i).getDocumentId() < index.getPostings(q.toString()).get(j).getDocumentId())
+					i++;
+				else  if(bufferList.get(i).getDocumentId() > index.getPostings(q.toString()).get(j).getDocumentId())
+					j++;
+			}
+		}
 		return result;
 	}
 	

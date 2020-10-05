@@ -142,27 +142,42 @@ public class BooleanQueryParser {
 	private Literal findNextLiteral(String subquery, int startIndex) {
 		int subLength = subquery.length();
 		int lengthOut;
-		
 		// Skip past white space.
 		while (subquery.charAt(startIndex) == ' ') {
 			++startIndex;
 		}
-		
-		// Locate the next space to find the end of this literal.
-		int nextSpace = subquery.indexOf(' ', startIndex);
-		if (nextSpace < 0) {
-			// No more literals in this subquery.
-			lengthOut = subLength - startIndex;
+
+
+		if(subquery.charAt(startIndex) == '"'){
+			int nextDoubleQuote = subquery.indexOf('"', startIndex + 1);
+			int nextQuoteSpace = subquery.indexOf(' ', nextDoubleQuote); //space after double quote
+			if(nextQuoteSpace < 0){
+				// No more literals in this subquery.
+				lengthOut = subLength - startIndex;
+			}
+			else {
+				lengthOut = nextQuoteSpace - startIndex;
+			}
+			// This is a phrase literal and the object PhraseLiteral excludes double quote
+			return new Literal(
+					new StringBounds(startIndex, lengthOut),
+					new PhraseLiteral(subquery.substring(startIndex + 1, startIndex + lengthOut - 1)));
 		}
-		else {
-			lengthOut = nextSpace - startIndex;
+		else{
+			// Locate the next space to find the end of this literal.
+			int nextSpace = subquery.indexOf(' ', startIndex);
+			if (nextSpace < 0) {
+				// No more literals in this subquery.
+				lengthOut = subLength - startIndex;
+			}
+			else {
+				lengthOut = nextSpace - startIndex;
+			}
+			// This is a term literal containing a single term.
+			return new Literal(
+					new StringBounds(startIndex, lengthOut),
+					new TermLiteral(subquery.substring(startIndex, startIndex + lengthOut)));
 		}
-		
-		// This is a term literal containing a single term.
-		return new Literal(
-		 new StringBounds(startIndex, lengthOut),
-		 new TermLiteral(subquery.substring(startIndex, startIndex + lengthOut)));
-		
 		/*
 		TODO:
 		Instead of assuming that we only have single-term literals, modify this method so it will create a PhraseLiteral
