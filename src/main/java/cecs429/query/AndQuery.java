@@ -21,32 +21,31 @@ public class AndQuery implements Query {
 	
 	@Override
 	public List<Posting> getPostings(Index index) {
-		List<Posting> result = null;
+		List<Posting> result = new ArrayList<>();
 		List<Posting> bufferList = new ArrayList<>();
-
 		// TODO: program the merge for an AndQuery, by gathering the postings of the composed QueryComponents and
 		// intersecting the resulting postings.
 		for(Query q : mChildren){
 			if(q == mChildren.get(0)) {
-				result = index.getPostings(q.toString());
+				bufferList = index.getPostings(q.toString());
 				continue;
 			}
-			//result.clear();
 			int i = 0;
 			int j = 0;
-			while(i < result.size() && j < index.getPostings(q.toString()).size()){
-				if(result.get(i).getDocumentId() == index.getPostings(q.toString()).get(j).getDocumentId()) {
-					bufferList.add(result.get(i));
+			while(i < bufferList.size() && j < index.getPostings(q.toString()).size()){
+				if(bufferList.get(i).getDocumentId() == index.getPostings(q.toString()).get(j).getDocumentId()) {
+					result.add(bufferList.get(i));
 					i++;
 					j++;
 				}
-				else if(result.get(i).getDocumentId() < index.getPostings(q.toString()).get(j).getDocumentId())
+				else if(bufferList.get(i).getDocumentId() < index.getPostings(q.toString()).get(j).getDocumentId())
 					i++;
-				else  if(result.get(i).getDocumentId() > index.getPostings(q.toString()).get(j).getDocumentId())
+				else  if(bufferList.get(i).getDocumentId() > index.getPostings(q.toString()).get(j).getDocumentId())
 					j++;
 			}
+			bufferList = result;
 		}
-		return bufferList;
+		return result;
 	}
 	
 	@Override

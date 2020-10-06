@@ -36,17 +36,17 @@ public class PhraseLiteral implements Query {
 		// TODO: program this method. Retrieve the postings for the individual terms in the phrase,
 		// and positional merge them together.
 
-		List<Posting> result = null;
+		List<Posting> result = new ArrayList<>();
+		List<Posting> bufferList = new ArrayList<>();
 		int gapOfDoc = 1; // use it to find the position
 		for (String s : mTerms) {
-			if (s == mTerms.get(0)) {
-				result = index.getPostings(s);
+			if (s.equals(mTerms.get(0))) {
+				bufferList = index.getPostings(s);
 				continue;
 			}
 			int i = 0;
 			int j = 0;
-			List<Posting> bufferList = new ArrayList<>(result);
-			result.clear();
+
 			// compare the docID in each two terms
 			while (i < bufferList.size() && j < index.getPostings(s).size()) {
 				//find the same docID
@@ -73,6 +73,7 @@ public class PhraseLiteral implements Query {
 				else if (result.get(i).getDocumentId() > index.getPostings(s).get(j).getDocumentId())
 					j++;
 			}
+			bufferList = result;
 		}
 		return result;
 	}

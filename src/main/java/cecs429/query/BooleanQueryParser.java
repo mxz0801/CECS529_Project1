@@ -148,7 +148,7 @@ public class BooleanQueryParser {
 		}
 
 
-		if(subquery.charAt(startIndex) == '"'){
+		if(subquery.charAt(startIndex) == '"'){ // Phrase Literal
 			int nextDoubleQuote = subquery.indexOf('"', startIndex + 1);
 			int nextQuoteSpace = subquery.indexOf(' ', nextDoubleQuote); //space after double quote
 			if(nextQuoteSpace < 0){
@@ -173,10 +173,17 @@ public class BooleanQueryParser {
 			else {
 				lengthOut = nextSpace - startIndex;
 			}
-			// This is a term literal containing a single term.
-			return new Literal(
-					new StringBounds(startIndex, lengthOut),
-					new TermLiteral(subquery.substring(startIndex, startIndex + lengthOut)));
+
+			int starSign = subquery.indexOf('*', startIndex);
+			if(starSign <0)
+				// This is a term literal containing a single term.
+				return new Literal(
+						new StringBounds(startIndex, lengthOut),
+						new TermLiteral(subquery.substring(startIndex, startIndex + lengthOut)));
+			else
+				return new Literal(
+						new StringBounds(startIndex, lengthOut),
+						new WildcardLiteral(subquery.substring(startIndex, startIndex + lengthOut)));
 		}
 		/*
 		TODO:
