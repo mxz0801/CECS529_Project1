@@ -13,10 +13,8 @@ import cecs429.text.*;
 
 
 public class SearchEngine {
-    static int corpusIndex = 0;
 
-
-    public static void main(String[] args) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
+	public static void main(String[] args) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
 		// TODO Auto-generated method stub
 		String abc ="dddddDHKJHF";
 		abc.toLowerCase();
@@ -34,23 +32,26 @@ public class SearchEngine {
 		Scanner sc = new Scanner(System.in);
 		String directory = sc.nextLine();
 
-
-        long startTime = System.currentTimeMillis();
+		long startTime = System.currentTimeMillis();
 		System.out.println("Timer started");
-		DocumentCorpus corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json");   //read json file
-		DocumentCorpus corpusTxt = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
+		DocumentCorpus corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json",".txt");   //read json file
+		//DocumentCorpus corpusTxt = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
+//		DocumentCorpus combinedCorpus = DirectoryCorpus.loadDirctory(corpusJs,corpusTxt);
+
 		//System.out.println(corpusJs.getCorpusSize());
-		Index indexJs = indexCorpus(corpusJs,corpusTxt) ;
+		Index indexJs = indexCorpus(corpusJs) ;
+		//Index indexTxt = indexCorpus(corpusTxt);
 		long endTime = System.currentTimeMillis();
 		System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
 		while(true){
 			System.out.print("Pleas enter the term to search for: ");
-			String query = sc.next();
+			String query = sc.nextLine();
 			if(query.equals("quit")) {
 				System.out.println("Exit the search.");
 				break;
-			}else if(query.equals(":stem")){
-				String stemToken = sc.next();
+			}else if(query.contains(":stem")){
+				String spliter[] = query.split(" ");
+				String stemToken = spliter[1];
 				ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
 				String processedToken = processor2.stem(stemToken);
 				System.out.println(stemToken + "-->" + processedToken);
@@ -62,30 +63,14 @@ public class SearchEngine {
 			}
 			else {
 				try {
-				    boolean TxtCorpus = false;
-                    boolean JsCorpus = false;
-                    String str = query.toLowerCase();
+					String str = query.toLowerCase();
 					BooleanQueryParser parser = new BooleanQueryParser();
 					Query queryPosting = parser.parseQuery(str);
 					for (Posting p : queryPosting.getPostings(indexJs)) {
-					   for(int i = 0; i < p.getPosition().size();i++){
-                           if(p.getPosition().get(i)>corpusIndex){
-                               TxtCorpus = true;
-                           }else{
-                               JsCorpus = true;
-                           }
-                       }
-                        if(TxtCorpus){
-                            System.out.println("Document: " + corpusTxt.getDocument(p.getDocumentId()).getFileTitle());
-                            System.out.println(p.getPosition());
-                        }
-                        if(JsCorpus){
-                            System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
-                            System.out.println(p.getPosition());
-                        }
+						System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
+						System.out.println(p.getPosition());
 					}
 				}catch (Exception e) {
-				    System.out.println("Didn't find in the corpus, please try again");
 				}
 //				try{
 //					String str = query.toLowerCase();
@@ -98,21 +83,19 @@ public class SearchEngine {
 //				}catch (Exception e) {
 //				}
 			}
-
+			
 		}
 		sc.close();
 	}
 
-	private static Index indexCorpus(DocumentCorpus corpus,DocumentCorpus corpus2) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+	private static Index indexCorpus(DocumentCorpus corpus) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
-        int position = 1;
-
-        for(Document sDocument : corpus.getDocuments() ){
+		for(Document sDocument : corpus.getDocuments()) {
 				TokenStream stream = new EnglishTokenStream(sDocument.getContent());
 				System.out.println("Indexing file " + sDocument.getFileTitle());
-
 			Iterable<String> token = stream.getTokens();
+				int position = 1;
 				for(String t : token) {
 					List<String> word = processor.processToken(t);
 					if (word.size() > 0) {
@@ -120,32 +103,12 @@ public class SearchEngine {
 							index.addTerm(word.get(i), sDocument.getId(), position);
 							position++;
 						}
-
 					}
 				}
-                corpusIndex = position;
 				stream.close();
 			}
-        for(Document TDocument : corpus2.getDocuments() ){
-            TokenStream stream = new EnglishTokenStream(TDocument.getContent());
-            System.out.println("Indexing file " + TDocument.getFileTitle());
-
-            Iterable<String> token = stream.getTokens();
-            for(String t : token) {
-                List<String> word = processor.processToken(t);
-                if (word.size() > 0) {
-                    for(int i=0;i<word.size();i++){
-                        index.addTerm(word.get(i), TDocument.getId(), position);
-                        position++;
-                    }
-
-                }
-            }
-            stream.close();
-        }
-
+		
 		return index;
 	}
-
 
 }
