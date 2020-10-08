@@ -1,17 +1,18 @@
 package cecs429.documents;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import com.google.gson.Gson;
 
 /**
  * Represents a document that is saved as a json file in the local file system.
  */
-public class JsonFileDocument implements FileDocument {
+public class JsonFileDocument implements FileDocument{
 	private int mDocumentId;
 	private Path mFilePath;
     private GsonDoc gsonDoc;
@@ -42,7 +43,15 @@ public class JsonFileDocument implements FileDocument {
 			Reader reader = Files.newBufferedReader(mFilePath);
 
 			gsonDoc = gson.fromJson(reader,GsonDoc.class);
-			return Files.newBufferedReader(mFilePath);
+			gsonDoc.setFileName(mFilePath.getFileName().toString());
+//			//convert to json object
+//			StringBuffer sb = new StringBuffer();
+//			String line = null;
+//			while((line = reader.readLine()) != null) {
+//				sb.append(line);
+//			}
+//			mJsonObject = gson.fromJson(sb.toString(), GsonDoc.class);
+			return Files.newBufferedReader(mFilePath); //TO REVISE: Bad way. It reads twice!
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -53,12 +62,14 @@ public class JsonFileDocument implements FileDocument {
 		return gsonDoc.getTitle() + " ("+mFilePath.getFileName().toString()+ ")";
 	}
 
+
+
 	public String getJsonTitle() {
 		return gsonDoc.getTitle();
 	}
-
-	public String getJsonBody() {
-		return gsonDoc.getBody();
+	@Override
+	public GsonDoc getJson() {
+		return gsonDoc;
 	}
 
 	public static FileDocument loadJsonFileDocument(Path absolutePath, int documentId) {
