@@ -64,12 +64,14 @@ public class SearchEngine {
 					if(query.contains("*")) {
 						for (Posting p : queryPosting.getPostings(indexJs, kGramIndex)) {
 							System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
+							file.add(corpusJs.getDocument(p.getDocumentId()).getJson());
 							System.out.println(p.getPosition());
 						}
 					}
 					else {
 						for (Posting p : queryPosting.getPostings(indexJs)) {
 							System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
+							file.add(corpusJs.getDocument(p.getDocumentId()).getJson());
 							System.out.println(p.getPosition());
 						}
 					}
@@ -86,7 +88,7 @@ public class SearchEngine {
 //					}
 //				}catch (Exception e) {
 //				}
-
+			System.out.println("Done");
 			return file;
 		}
 
@@ -126,10 +128,10 @@ public class SearchEngine {
 	public List<Integer> getID(){
 		return ID;
 	}
-	public void stem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
-
-		//processed.add(processedToken);
-	}
+//	public void stem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+//
+//		//processed.add(processedToken);
+//	}
 
 	public String getStem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
 		ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();

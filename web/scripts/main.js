@@ -73,6 +73,7 @@
             elem.remove();
         }
         var SearchTerm = oTerm.value;
+
         var len=0;
     // if(SearchTerm ===''){
     // oSearchError.innerHTML = 'Please enter your word'
@@ -104,14 +105,18 @@
                 var list = '',
                     item;
                 len = res.length;
+                if(len>0){
+                    for(var i=0;i<len;i++){
+                        // item = res[i].title;
+                        // list +=item;
+                        addItem(oTitle,res[i],i)
+                    }
 
-                for(var i=0;i<len;i++){
-                    // item = res[i].title;
-                    // list +=item;
-                    addItem(oTitle,res[i],i)
                 }
+                else{
+                oTitle.innerHTML = 'Not found';
 
-                // oTitle.innerHTML = list;
+                }
             }
         })
 

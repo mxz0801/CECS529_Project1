@@ -118,7 +118,10 @@ public class WildcardLiteral implements Query {
                         j++;
                     }
                 }
-                bufferList2 = result;
+//                for(int a = 0;a<result.size();a++){
+//                    bufferList2.add(result.get(a));
+//                }
+                bufferList2 = new ArrayList<>(result);
             }
         }
 
