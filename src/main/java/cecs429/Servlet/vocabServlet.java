@@ -27,7 +27,7 @@ public class vocabServlet extends HttpServlet {
         String input = request.getParameter("input");
         SearchEngine searchEngine = new SearchEngine();
 
-        try {
+      /*  try {
             searchEngine.search(dir,input);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
@@ -35,7 +35,9 @@ public class vocabServlet extends HttpServlet {
             e.printStackTrace();
         } catch (InstantiationException e) {
             e.printStackTrace();
-        }
+       }
+       */
+
         List<String> vocabulary = searchEngine.getVocab();
         List<String> temp = new ArrayList<>();
         for(String vocab : vocabulary){

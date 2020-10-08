@@ -21,101 +21,105 @@ public class SearchEngine {
 	List<String> processed = new ArrayList<>();
 
 
-	public List<GsonDoc> search (String dir, String input) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
+	//public List<GsonDoc> search (String dir, String input) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
+	public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
 		// TODO Auto-generated method stub
-		file.clear();
-		//System.out.println("Please enter the directory of the file: ");
-		String directory = dir;
-
+		//	file.clear();
+		System.out.println("Please enter the directory of the file: ");
+		//	String directory = dir;
+		Scanner sc = new Scanner(System.in);
+		String directory = sc.nextLine();
 		long startTime = System.currentTimeMillis();
+
 		System.out.println("Timer started");
-		DocumentCorpus corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json",".txt");   //read json file
+		DocumentCorpus corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json", ".txt");   //read json file
 		//DocumentCorpus corpusTxt = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
 //		DocumentCorpus combinedCorpus = DirectoryCorpus.loadDirctory(corpusJs,corpusTxt);
 
 		//System.out.println(corpusJs.getCorpusSize());
 		KgramIndex kGramIndex = new KgramIndex();
-		Index indexJs = indexCorpus(corpusJs, kGramIndex) ;
+		Index indexJs = indexCorpus(corpusJs, kGramIndex);
 		//Index indexTxt = indexCorpus(corpusTxt);
 		long endTime = System.currentTimeMillis();
 		System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
 
-			//System.out.print("Pleas enter the term to search for: ");
-			String query = input;
-//			if(query.equals("quit")) {
-//				System.out.println("Exit the search.");
-//			}else if(query.contains(":stem")){
-				String stemToken = input;
+		while(true){
+			System.out.print("Pleas enter the term to search for: ");
+			String query = sc.nextLine();
+			if(query.equals("quit")) {
+				System.out.println("Exit the search.");
+				break;
+			}else if(query.contains(":stem")){
+				String[] spliter = query.split(" ");
+				String stemToken = spliter[1];
 				ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
 				String processedToken = processor2.stem(stemToken);
-				//stem(stemToken,processedToken);
-//				System.out.println(stemToken + "-->" + processedToken);
-//
-
+				System.out.println(stemToken + "-->" + processedToken);
+			}else if(query.equals(":vocab")){
+				for(int i=0;i<1000;i++){
+					System.out.println(indexJs.getVocabulary().get(i));
+				}
+				System.out.println(indexJs.getVocabulary().size());
+			}
+			else{
 				//System.out.println(indexJs.getVocabulary());
 
-				vocab(indexJs.getVocabulary());
+				//	vocab(indexJs.getVocabulary());
 				//System.out.println(indexJs.getVocabulary().size());
-
 				try {
 					String str = query.toLowerCase();
 					BooleanQueryParser parser = new BooleanQueryParser();
 					Query queryPosting = parser.parseQuery(str);
-					if(query.contains("*")) {
+					if (query.contains("*")) {
 						for (Posting p : queryPosting.getPostings(indexJs, kGramIndex)) {
 							System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
-							file.add(corpusJs.getDocument(p.getDocumentId()).getJson());
-							System.out.println(p.getPosition());
+							System.out.println(queryPosting.getPostings(indexJs).size());
+
 						}
-					}
-					else {
+					} else {
 						for (Posting p : queryPosting.getPostings(indexJs)) {
 							System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
-							file.add(corpusJs.getDocument(p.getDocumentId()).getJson());
-							System.out.println(p.getPosition());
 						}
+						System.out.println(queryPosting.getPostings(indexJs).size());
 					}
-
-				}catch (Exception e) {
+				} catch (Exception e) {
 				}
-//				try{
-//					String str = query.toLowerCase();
-//					BooleanQueryParser parser = new BooleanQueryParser();
-//					Query queryPosting = parser.parseQuery(str);
-//					for(Posting pTxt : queryPosting.getPostings(indexTxt)){
-//						System.out.println("Document: " + corpusTxt.getDocument(pTxt.getDocumentId()).getFileTitle());
-//						System.out.println(pTxt.getPosition());
-//					}
-//				}catch (Exception e) {
-//				}
+			}
 			System.out.println("Done");
-			return file;
 		}
+			//return file;
+
+	}
 
 
 
 
 
 	private static Index indexCorpus(DocumentCorpus corpus, KgramIndex kgramIndex) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+		Set<String> vocab = new HashSet<>();
 		ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		for(Document sDocument : corpus.getDocuments()) {
-				TokenStream stream = new EnglishTokenStream(sDocument.getContent());
-				//System.out.println("Indexing file " + sDocument.getFileTitle());
+			TokenStream stream = new EnglishTokenStream(sDocument.getContent());
+			//System.out.println("Indexing file " + sDocument.getFileTitle());
 			Iterable<String> token = stream.getTokens();
-				int position = 1;
-				for(String t : token) {
-					kgramIndex.addTerm(t.replaceAll("\\W", "").toLowerCase());
-					List<String> word = processor.processToken(t);
-					if (word.size() > 0) {
-						for(int i=0;i<word.size();i++){
-							index.addTerm(word.get(i), sDocument.getId(), position);
-							position++;
-						}
+			int position = 1;
+			for (String t : token) {
+				vocab.add(t.replaceAll("\\W", "").toLowerCase());
+				List<String> word = processor.processToken(t);
+				if (word.size() > 0) {
+					for (int i = 0; i < word.size(); i++) {
+						index.addTerm(word.get(i), sDocument.getId(), position);
+						position++;
 					}
 				}
-				stream.close();
 			}
+			stream.close();
+		}
+
+		for(String s: vocab){
+			kgramIndex.addTerm(s);
+		}
 		
 		return index;
 	}
