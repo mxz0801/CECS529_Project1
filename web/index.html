@@ -2,15 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>529 DEMO</title>
 </head>
 <body>
-    <button onclick="closing()">this is a button</button>
+<div id="Directory-form">
+    <label for="dir">Directory :</label>
+    <input id="dir" name="dir" type="text">
+    <button id="goto-btn">Go to</button>
+    <button id="exit-btn">Exit</button>
+    <p id="Directory-error"></p>
+</div>
+<div id="Search-form" >
+    <label for="term">Please enter the term to search for: </label>
+    <input id="term" name="term" type="text">
+    <button id="search-btn">Search</button>
+    <button id="exit-btn-search">Exit</button>
+    <button id="stem-btn">:stem</button>
+    <button id="vocab-btn">:vocab</button>
+    <button id="dir-btn">:dir</button>
+    <p id="Search-error"></p>
+</div>
+<div id="display-form">
+    <ul id="item-list">
+    <li id="title-display"></li>
+    <button id = "viewContent">View content</button>
+    </ul>
 
-    <script>
-        function closing(){
-            window.close();
-        }
-    </script>
+</div>
+
+<script src="scripts/main.js"></script>
 </body>
 </html>

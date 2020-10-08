@@ -1,5 +1,7 @@
 package cecs429.documents;
 
+import com.google.gson.Gson;
+
 import java.io.Reader;
 
 /**
@@ -20,6 +22,9 @@ public interface Document {
 	 * The title of the document, for displaying to the user.
 	 */
 	String getFileTitle();
+
+	GsonDoc getJson();
+
 
 
 }

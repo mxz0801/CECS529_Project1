@@ -10,4 +10,5 @@ public interface FileDocument extends Document {
 	 * The absolute path to the document's file.
 	 */
 	Path getFilePath();
+
 }

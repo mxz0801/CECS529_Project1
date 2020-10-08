@@ -1,7 +1,7 @@
 package cecs429.csulb;
 
 import java.io.IOException;
-import java.nio.file.Path;
+
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -13,8 +13,16 @@ import cecs429.text.*;
 
 
 public class SearchEngine {
+	private List<String> result = new ArrayList<>();
+	private List<Integer> ID = new ArrayList<>();
+	private List<String> word = new ArrayList<>();
+	private List<GsonDoc> file = new ArrayList<>();
 
-	public static void main(String[] args) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
+	List<String> processed = new ArrayList<>();
+
+	private static final String DEFAULT_DIR = "D:\\git\\CECS 529\\milestone1\\web\\WEB-INF\\corpus";
+
+	public List<GsonDoc> search (String dir, String input) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
 		// TODO Auto-generated method stub
 //		String abc ="dddddDHKJHF";
 //		abc.toLowerCase();
@@ -30,7 +38,7 @@ public class SearchEngine {
 //		System.out.println(bufferList);
 		System.out.println("Please enter the directory of the file: ");
 		Scanner sc = new Scanner(System.in);
-		String directory = sc.nextLine();
+		String directory = "D:\\git\\CECS 529\\milestone1\\web\\WEB-INF\\"+dir;
 
 		long startTime = System.currentTimeMillis();
 		System.out.println("Timer started");
@@ -43,31 +51,31 @@ public class SearchEngine {
 		//Index indexTxt = indexCorpus(corpusTxt);
 		long endTime = System.currentTimeMillis();
 		System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
-		while(true){
+
 			System.out.print("Pleas enter the term to search for: ");
-			String query = sc.nextLine();
-			if(query.equals("quit")) {
-				System.out.println("Exit the search.");
-				break;
-			}else if(query.contains(":stem")){
-				String[] spliter = query.split(" ");
-				String stemToken = spliter[1];
+			String query = input;
+//			if(query.equals("quit")) {
+//				System.out.println("Exit the search.");
+//			}else if(query.contains(":stem")){
+				String stemToken = input;
 				ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
 				String processedToken = processor2.stem(stemToken);
+				//stem(stemToken,processedToken);
 				System.out.println(stemToken + "-->" + processedToken);
-			}else if(query.equals(":vocab")){
-				for(int i=0;i<100;i++){
-					System.out.println(indexJs.getVocabulary().get(i));
-				}
+
+
+				System.out.println(indexJs.getVocabulary());
+
+				vocab(indexJs.getVocabulary());
 				System.out.println(indexJs.getVocabulary().size());
-			}
-			else {
+
 				try {
 					String str = query.toLowerCase();
 					BooleanQueryParser parser = new BooleanQueryParser();
 					Query queryPosting = parser.parseQuery(str);
 					for (Posting p : queryPosting.getPostings(indexJs)) {
 						System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
+						file.add(corpusJs.getDocument(p.getDocumentId()).getJson());
 						System.out.println(p.getPosition());
 					}
 
@@ -83,11 +91,13 @@ public class SearchEngine {
 //					}
 //				}catch (Exception e) {
 //				}
-			}
-			
+
+			return file;
 		}
-		sc.close();
-	}
+
+
+
+
 
 	private static Index indexCorpus(DocumentCorpus corpus) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
@@ -112,4 +122,32 @@ public class SearchEngine {
 		return index;
 	}
 
+
+
+	public void setID(List<Integer> ID){
+		this.ID = ID;
+	}
+	public List<Integer> getID(){
+		return ID;
+	}
+	public void stem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+
+		//processed.add(processedToken);
+	}
+
+	public String getStem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+		ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
+		String processedToken = processor2.stem(input);
+		return processedToken;
+	}
+	public void vocab(List<String> word){
+		if(word.size()>1000)
+		{
+			word = word.subList(0,100);
+		}
+		this.word = word;
+	}
+	public List<String> getVocab(){
+			return word;
+	}
 }
