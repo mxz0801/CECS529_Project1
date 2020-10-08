@@ -11,15 +11,16 @@
     oDirValue = document.getElementById('dir'),
     oTerm = document.getElementById('term'),
     oDisplay = document.getElementById('display-form'),
-    oTitle = document.getElementById('title-display'),
-    oViewContent = document.getElementById('viewContent'),
-    oError = document.getElementById('Directory-error'),
-    oSearchError = document.getElementById('Search-error');
+    oTitle = document.getElementById('item-list'),
+    oError = document.getElementById('Directory-error');
 
     var DirValue = 'corpus';
     var printout = '';
+    var container = $create('div',{id:'container'});
 
-    function init(){
+
+
+        function init(){
     validateSession();
     bindEvent();
 }
@@ -58,7 +59,7 @@
 },false);
 
     oExit.addEventListener('click', function (){
-        window.open('','_self');
+        window.close();
 },false);
 
     oExit1.addEventListener('click', function (){
@@ -66,7 +67,12 @@
 },false);
 
     oSearch.addEventListener('click', function (){
-    var SearchTerm = oTerm.value;
+        var elem = document.getElementById("container");
+        if(elem){
+            elem.remove();
+        }
+        var SearchTerm = oTerm.value;
+        var len=0;
     // if(SearchTerm ===''){
     // oSearchError.innerHTML = 'Please enter your word'
     // return
@@ -77,25 +83,50 @@
     method: 'GET',
     url: './search?dir=' + DirValue + '&input='+SearchTerm,
 }
+        // ajax({
+        //     method: opt.method,
+        //     url: opt.url,
+        //     success:function (res){
+        //         var list = '';
+        //         for(var i=0;i<res.length;i++){
+        //             printout = res[i].title+"<br />";
+        //             list +=printout;
+        //             oTitle.innerHTML = list;
+        //         }
+        //
+        //     }
+        // })
         ajax({
             method: opt.method,
             url: opt.url,
             success:function (res){
-                var list = '';
-                for(var i=0;i<res.length;i++){
-                    printout = res[i].title+"<br />";
-                    list +=printout;
-                    oTitle.innerHTML = list;
+                var list = '',
+                    item;
+                len = res.length;
+
+                for(var i=0;i<len;i++){
+                    // item = res[i].title;
+                    // list +=item;
+                    addItem(oTitle,res[i],i)
                 }
 
+                // oTitle.innerHTML = list;
             }
         })
+        for(var i = 0;i<len;i++){
+            var linkC = document.getElementsByClassName('link'+i);
+            linkC.addEventListener('click'),function (){
+                showOrHideElement(document.getElementById('content'+i),'block');
+            }
+
+        }
+        container = $create('div',{id:'container'})
         showOrHideElement(oSearchForm,'block');
     showOrHideElement(oDisplay,'block');
     showOrHideElement(oDirForm,'none');
-    showOrHideElement(oViewContent,'block');
 
     },false);
+
 
     oStem.addEventListener('click', function (){
         var SearchTerm = oTerm.value;
@@ -124,7 +155,6 @@
             showOrHideElement(oSearchForm,'block');
             showOrHideElement(oDisplay,'block');
             showOrHideElement(oDirForm,'none');
-            showOrHideElement(oViewContent,'none');
     },false);
 
         oVocab.addEventListener('click', function (){
@@ -150,7 +180,6 @@
             showOrHideElement(oSearchForm,'block');
             showOrHideElement(oDisplay,'block');
             showOrHideElement(oDirForm,'none');
-            showOrHideElement(oViewContent,'none');
         },false);
 
 
@@ -159,6 +188,31 @@
 }
 
 
+    function addItem(itemList,item,i){
+        var section = $create('div', {className: 'item-title'});
+        var body = $create('p',{id: 'content'+i})
+        body.innerHTML = item.body;
+        var title = $create('a',{id:'link'+i, href:item.url,target:'_blank'});
+        title.innerHTML = item.title;
+        section.appendChild(title);
+        section.appendChild(body);
+
+        container.appendChild(section);
+        oTitle.append(container);
+
+    }
+
+
+
+        function $create(tag, options) {
+            var element = document.createElement(tag);
+            for (var key in options) {
+                if (options.hasOwnProperty(key)) {
+                    element[key] = options[key];
+                }
+            }
+            return element;
+        }
     /**
      * AJAX helper
      */

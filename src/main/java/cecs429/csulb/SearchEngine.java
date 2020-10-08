@@ -36,6 +36,7 @@ public class SearchEngine {
 //		bufferList.add(333);
 //		System.out.println(result);
 //		System.out.println(bufferList);
+		file.clear();
 		System.out.println("Please enter the directory of the file: ");
 		Scanner sc = new Scanner(System.in);
 		String directory = dir;
