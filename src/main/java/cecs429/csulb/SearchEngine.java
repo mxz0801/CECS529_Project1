@@ -20,7 +20,6 @@ public class SearchEngine {
 
 	List<String> processed = new ArrayList<>();
 
-	private static final String DEFAULT_DIR = "D:\\git\\CECS 529\\milestone1\\web\\WEB-INF\\corpus";
 
 	public List<GsonDoc> search (String dir, String input) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
 		// TODO Auto-generated method stub
@@ -37,8 +36,7 @@ public class SearchEngine {
 //		System.out.println(result);
 //		System.out.println(bufferList);
 		file.clear();
-		System.out.println("Please enter the directory of the file: ");
-		Scanner sc = new Scanner(System.in);
+		//System.out.println("Please enter the directory of the file: ");
 		String directory = dir;
 
 		long startTime = System.currentTimeMillis();
@@ -53,7 +51,7 @@ public class SearchEngine {
 		long endTime = System.currentTimeMillis();
 		System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
 
-			System.out.print("Pleas enter the term to search for: ");
+			//System.out.print("Pleas enter the term to search for: ");
 			String query = input;
 //			if(query.equals("quit")) {
 //				System.out.println("Exit the search.");
@@ -68,7 +66,7 @@ public class SearchEngine {
 				//System.out.println(indexJs.getVocabulary());
 
 				vocab(indexJs.getVocabulary());
-				System.out.println(indexJs.getVocabulary().size());
+				//System.out.println(indexJs.getVocabulary().size());
 
 				try {
 					String str = query.toLowerCase();
@@ -77,7 +75,7 @@ public class SearchEngine {
 					for (Posting p : queryPosting.getPostings(indexJs)) {
 //						System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
 						file.add(corpusJs.getDocument(p.getDocumentId()).getJson());
-						System.out.println(p.getPosition());
+						//System.out.println(p.getPosition());
 					}
 
 				}catch (Exception e) {
@@ -105,7 +103,7 @@ public class SearchEngine {
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		for(Document sDocument : corpus.getDocuments()) {
 				TokenStream stream = new EnglishTokenStream(sDocument.getContent());
-				System.out.println("Indexing file " + sDocument.getFileTitle());
+				//System.out.println("Indexing file " + sDocument.getFileTitle());
 			Iterable<String> token = stream.getTokens();
 				int position = 1;
 				for(String t : token) {

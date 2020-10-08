@@ -67,6 +67,7 @@
 },false);
 
     oSearch.addEventListener('click', function (){
+        oTitle.innerHTML='';
         var elem = document.getElementById("container");
         if(elem){
             elem.remove();
@@ -113,13 +114,7 @@
                 // oTitle.innerHTML = list;
             }
         })
-        for(var i = 0;i<len;i++){
-            var linkC = document.getElementsByClassName('link'+i);
-            linkC.addEventListener('click'),function (){
-                showOrHideElement(document.getElementById('content'+i),'block');
-            }
 
-        }
         container = $create('div',{id:'container'})
         showOrHideElement(oSearchForm,'block');
     showOrHideElement(oDisplay,'block');
@@ -129,6 +124,7 @@
 
 
     oStem.addEventListener('click', function (){
+        oTitle.innerHTML='';
         var SearchTerm = oTerm.value;
         // if(SearchTerm ===''){
         //         oSearchError.innerHTML = 'Please enter your word'
@@ -158,6 +154,7 @@
     },false);
 
         oVocab.addEventListener('click', function (){
+            oTitle.innerHTML='';
             var SearchTerm = oTerm.value;
             // if(SearchTerm ===''){
             //     oSearchError.innerHTML = 'Please enter your word'
@@ -190,15 +187,18 @@
 
     function addItem(itemList,item,i){
         var section = $create('div', {className: 'item-title'});
-        var body = $create('p',{id: 'content'+i})
+        var show = $create('button',{id:'btn'+i});
+        var body = $create('p',{id: 'content'+i, style:'display:none'})
         body.innerHTML = item.body;
         var title = $create('a',{id:'link'+i, href:item.url,target:'_blank'});
         title.innerHTML = item.title;
         section.appendChild(title);
+        section.appendChild(show);
         section.appendChild(body);
 
         container.appendChild(section);
         oTitle.append(container);
+
 
     }
 
