@@ -136,8 +136,8 @@
             //     oSearchError='';
             // }
             var opt = {
-                method: 'GET',
-                url: './vocab?dir=' + DirValue + '&input='+SearchTerm,
+                method: 'POST',
+                url: './search?dir=' + DirValue + '&input='+SearchTerm,
             }
             ajax({
                 method: opt.method,

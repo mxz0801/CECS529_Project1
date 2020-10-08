@@ -38,7 +38,7 @@ public class SearchEngine {
 //		System.out.println(bufferList);
 		System.out.println("Please enter the directory of the file: ");
 		Scanner sc = new Scanner(System.in);
-		String directory = "D:\\git\\CECS 529\\milestone1\\web\\WEB-INF\\"+dir;
+		String directory = dir;
 
 		long startTime = System.currentTimeMillis();
 		System.out.println("Timer started");
@@ -61,10 +61,10 @@ public class SearchEngine {
 				ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
 				String processedToken = processor2.stem(stemToken);
 				//stem(stemToken,processedToken);
-				System.out.println(stemToken + "-->" + processedToken);
+//				System.out.println(stemToken + "-->" + processedToken);
+//
 
-
-				System.out.println(indexJs.getVocabulary());
+				//System.out.println(indexJs.getVocabulary());
 
 				vocab(indexJs.getVocabulary());
 				System.out.println(indexJs.getVocabulary().size());
@@ -74,7 +74,7 @@ public class SearchEngine {
 					BooleanQueryParser parser = new BooleanQueryParser();
 					Query queryPosting = parser.parseQuery(str);
 					for (Posting p : queryPosting.getPostings(indexJs)) {
-						System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
+//						System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
 						file.add(corpusJs.getDocument(p.getDocumentId()).getJson());
 						System.out.println(p.getPosition());
 					}
