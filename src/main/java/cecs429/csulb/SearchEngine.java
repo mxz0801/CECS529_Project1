@@ -23,18 +23,6 @@ public class SearchEngine {
 
 	public List<GsonDoc> search (String dir, String input) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
 		// TODO Auto-generated method stub
-//		String abc ="dddddDHKJHF";
-//		abc.toLowerCase();
-//		System.out.println(abc);
-//		List<Integer> result = new ArrayList<>();
-//		result.add(1);
-//		result.add(2);
-//		List<Integer> bufferList = new ArrayList<>(result);
-//		result.clear();
-//		System.out.println(bufferList);
-//		bufferList.add(333);
-//		System.out.println(result);
-//		System.out.println(bufferList);
 		file.clear();
 		//System.out.println("Please enter the directory of the file: ");
 		String directory = dir;
@@ -46,7 +34,8 @@ public class SearchEngine {
 //		DocumentCorpus combinedCorpus = DirectoryCorpus.loadDirctory(corpusJs,corpusTxt);
 
 		//System.out.println(corpusJs.getCorpusSize());
-		Index indexJs = indexCorpus(corpusJs) ;
+		KgramIndex kGramIndex = new KgramIndex();
+		Index indexJs = indexCorpus(corpusJs, kGramIndex) ;
 		//Index indexTxt = indexCorpus(corpusTxt);
 		long endTime = System.currentTimeMillis();
 		System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
@@ -72,10 +61,17 @@ public class SearchEngine {
 					String str = query.toLowerCase();
 					BooleanQueryParser parser = new BooleanQueryParser();
 					Query queryPosting = parser.parseQuery(str);
-					for (Posting p : queryPosting.getPostings(indexJs)) {
-//						System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
-						file.add(corpusJs.getDocument(p.getDocumentId()).getJson());
-						//System.out.println(p.getPosition());
+					if(query.contains("*")) {
+						for (Posting p : queryPosting.getPostings(indexJs, kGramIndex)) {
+							System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
+							System.out.println(p.getPosition());
+						}
+					}
+					else {
+						for (Posting p : queryPosting.getPostings(indexJs)) {
+							System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
+							System.out.println(p.getPosition());
+						}
 					}
 
 				}catch (Exception e) {
@@ -98,7 +94,7 @@ public class SearchEngine {
 
 
 
-	private static Index indexCorpus(DocumentCorpus corpus) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+	private static Index indexCorpus(DocumentCorpus corpus, KgramIndex kgramIndex) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		for(Document sDocument : corpus.getDocuments()) {
@@ -107,6 +103,7 @@ public class SearchEngine {
 			Iterable<String> token = stream.getTokens();
 				int position = 1;
 				for(String t : token) {
+					kgramIndex.addTerm(t.replaceAll("\\W", "").toLowerCase());
 					List<String> word = processor.processToken(t);
 					if (word.size() > 0) {
 						for(int i=0;i<word.size();i++){
