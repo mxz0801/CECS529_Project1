@@ -42,14 +42,7 @@ public class JsonFileDocument implements FileDocument {
 			Reader reader = Files.newBufferedReader(mFilePath);
 
 			gsonDoc = gson.fromJson(reader,GsonDoc.class);
-//			//convert to json object
-//			StringBuffer sb = new StringBuffer();
-//			String line = null;
-//			while((line = reader.readLine()) != null) {
-//				sb.append(line);
-//			}
-//			mJsonObject = gson.fromJson(sb.toString(), GsonDoc.class);
-			return Files.newBufferedReader(mFilePath); //TO REVISE: Bad way. It reads twice!
+			return Files.newBufferedReader(mFilePath);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

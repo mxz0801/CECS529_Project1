@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import cecs429.index.Index;
+import cecs429.index.KgramIndex;
 import cecs429.index.Posting;
 
 /**
@@ -65,7 +66,10 @@ public class OrQuery implements Query {
 		}
 		return result;
 	}
-	
+	@Override
+	public List<Posting> getPostings(Index index, KgramIndex index2){
+		return  null;
+	}
 	@Override
 	public String toString() {
 		// Returns a string of the form "[SUBQUERY] + [SUBQUERY] + [SUBQUERY]"

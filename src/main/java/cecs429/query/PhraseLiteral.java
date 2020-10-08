@@ -3,10 +3,10 @@ package cecs429.query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import cecs429.index.Index;
+import cecs429.index.KgramIndex;
 import cecs429.index.Posting;
 
 /**
@@ -77,7 +77,64 @@ public class PhraseLiteral implements Query {
 		}
 		return result;
 	}
-	
+
+	@Override
+	public List<Posting> getPostings(Index index, KgramIndex index2){
+		WildcardLiteral wildcardQuery = new WildcardLiteral();
+		List<Posting> result = new ArrayList<>();
+		List<Posting> bufferList = new ArrayList<>();
+		List<Posting> qList = new ArrayList<>();
+		int gapOfDoc = 1;
+		for(String s : mTerms){
+			if(s.contains("*") && s == mTerms.get(0)) {
+				wildcardQuery.setWildcardLiteral(s);
+				bufferList = wildcardQuery.getPostings(index, index2);
+				continue;
+			}
+			else if(s.contains("*") == false && s == mTerms.get(0)){
+				bufferList = index.getPostings(s);
+				continue;
+			}
+			int i = 0;
+			int j = 0;
+			if(s.contains("*")) {
+				wildcardQuery.setWildcardLiteral(s);
+				qList = wildcardQuery.getPostings(index, index2);
+			}
+			else
+				qList = index.getPostings(s);
+			// compare the docID in each two terms
+			while (i < bufferList.size() && j < qList.size()) {
+				//find the same docID
+				if (bufferList.get(i).getDocumentId() == qList.get(j).getDocumentId()) {
+					int m = 0;
+					int n = 0;
+
+					// compare the position
+					while (m < bufferList.get(i).getPosition().size() && n < qList.get(j).getPosition().size()) {
+						//find the position with phrase's order
+						if (index.getPostings(s).get(j).getPosition().get(n) == qList.get(j).getPosition().get(m) + gapOfDoc) {
+							result.add(bufferList.get(i));
+							gapOfDoc++;
+						} else if (qList.get(j).getPosition().get(n) <= bufferList.get(i).getPosition().get(m))
+							n++;
+						else if (qList.get(j).getPosition().get(n) > bufferList.get(i).getPosition().get(m))
+							m++;
+					}
+					i++;
+					j++;
+				}
+				else if (result.get(i).getDocumentId() < qList.get(j).getDocumentId())
+					i++;
+				else if (result.get(i).getDocumentId() > qList.get(j).getDocumentId())
+					j++;
+			}
+			bufferList = result;
+		}
+		return result;
+
+	}
+
 	@Override
 	public String toString() {
 		return "\"" + String.join(" ", mTerms) + "\"";

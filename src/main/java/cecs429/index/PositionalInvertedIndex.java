@@ -13,7 +13,6 @@ public class PositionalInvertedIndex implements Index {
 	 * Associates the given documentId and position with the given term in the index.
 	 */
 	public void addTerm(String term, int documentId, int position) {
-		//TO REVISE: something wrong when search for "body"
 		ArrayList<Posting> postList = new ArrayList<Posting>();
 		ArrayList<Integer> positionList = new ArrayList<Integer>();
 		positionList.add(position);

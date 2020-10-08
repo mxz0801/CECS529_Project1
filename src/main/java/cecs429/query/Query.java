@@ -3,6 +3,7 @@ package cecs429.query;
 import java.util.List;
 
 import cecs429.index.Index;
+import cecs429.index.KgramIndex;
 import cecs429.index.Posting;
 
 /**
@@ -14,4 +15,5 @@ public interface Query{
      * Retrieves a list of postings for the query, using an Index as the source.
      */
     List<Posting> getPostings(Index index);
+    List<Posting> getPostings(Index index, KgramIndex index2);
 }

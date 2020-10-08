@@ -5,6 +5,7 @@ package cecs429.query;
 import java.util.List;
 
 import cecs429.index.Index;
+import cecs429.index.KgramIndex;
 import cecs429.index.Posting;
 
 /**
@@ -25,7 +26,11 @@ public class TermLiteral implements Query {
 	public List<Posting> getPostings(Index index) {
 		return index.getPostings(mTerm);
 	}
-	
+
+	@Override
+	public List<Posting> getPostings(Index index, KgramIndex index2){
+		return  null;
+	}
 	@Override
 	public String toString() {
 		return mTerm;
