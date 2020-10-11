@@ -22,9 +22,9 @@ public class PositionalInvertedIndex implements Index {
 			mVocabulary.add(term);
 			mIndex.put(term, postList);
 		}
-		else if(mIndex.get(term).get(mIndex.get(term).size() - 1).getDocumentId()!= documentId) 
+		else if(mIndex.get(term).get(mIndex.get(term).size() - 1).getDocumentId() != documentId)
 			mIndex.get(term).add(post);
-		else if(mIndex.get(term).get(mIndex.get(term).size() - 1).getDocumentId()== documentId) 
+		else if(mIndex.get(term).get(mIndex.get(term).size() - 1).getDocumentId() == documentId)
 			mIndex.get(term).get(mIndex.get(term).size() - 1).getPosition().add(position);
 	}
 	

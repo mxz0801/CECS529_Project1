@@ -25,6 +25,10 @@ public class SearchEngine {
 	public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
 		// TODO Auto-generated method stub
 		//	file.clear();
+		ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
+		String word = "ddd" ;
+		//String word1 = processor.processToken(word);
+		//System.out.println(word1);
 		System.out.println("Please enter the directory of the file: ");
 		//	String directory = dir;
 		Scanner sc = new Scanner(System.in);
@@ -67,13 +71,21 @@ public class SearchEngine {
 				//	vocab(indexJs.getVocabulary());
 				//System.out.println(indexJs.getVocabulary().size());
 				try {
-					String str = query.toLowerCase();
+					String[] str = query.split(" ");
+					String newQuery = "";
+					for(String s : str){
+						if(s.equals(str[str.length-1]))
+							newQuery += getStem(s);
+						else
+							newQuery += getStem(s) + " ";
+					}
+					System.out.println(newQuery);
 					BooleanQueryParser parser = new BooleanQueryParser();
-					Query queryPosting = parser.parseQuery(str);
-					if (query.contains("*")) {
+					Query queryPosting = parser.parseQuery(newQuery);
+					if (newQuery.contains("*")) {
 						for (Posting p : queryPosting.getPostings(indexJs, kGramIndex)) {
 							System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
-							System.out.println(queryPosting.getPostings(indexJs).size());
+							System.out.println(queryPosting.getPostings(indexJs, kGramIndex).size());
 
 						}
 					} else {
@@ -94,7 +106,6 @@ public class SearchEngine {
 
 
 
-
 	private static Index indexCorpus(DocumentCorpus corpus, KgramIndex kgramIndex) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		Set<String> vocab = new HashSet<>();
 		ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
@@ -108,10 +119,9 @@ public class SearchEngine {
 				vocab.add(t.replaceAll("\\W", "").toLowerCase());
 				List<String> word = processor.processToken(t);
 				if (word.size() > 0) {
-					for (int i = 0; i < word.size(); i++) {
+					for (int i = 0; i < word.size(); i++)
 						index.addTerm(word.get(i), sDocument.getId(), position);
-						position++;
-					}
+					position++;
 				}
 			}
 			stream.close();
@@ -137,7 +147,7 @@ public class SearchEngine {
 //		//processed.add(processedToken);
 //	}
 
-	public String getStem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+	public static String getStem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
 		ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
 		String processedToken = processor2.stem(input);
 		return processedToken;
