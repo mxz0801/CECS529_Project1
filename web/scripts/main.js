@@ -12,8 +12,8 @@
     oTerm = document.getElementById('term'),
     oDisplay = document.getElementById('display-form'),
     oTitle = document.getElementById('item-list'),
+    oSearchResult = document.getElementById('Search-result'),
     oError = document.getElementById('Directory-error');
-
     var DirValue = 'corpus';
     var printout = '';
     var container = $create('div',{id:'container'});
@@ -72,9 +72,9 @@
         if(elem){
             elem.remove();
         }
-        var SearchTerm = oTerm.value;
+        var SearchTermTep = oTerm.value;
+        var SearchTerm = SearchTermTep.replace("+","%2B");
 
-        var len=0;
     // if(SearchTerm ===''){
     // oSearchError.innerHTML = 'Please enter your word'
     // return
@@ -111,7 +111,8 @@
                         // list +=item;
                         addItem(oTitle,res[i],i)
                     }
-                    window.printf("Total Documents: " +len);
+                    oSearchResult.innerText='Total Documents: ' +len;
+                    window.printf="Total Documents: " +len;
                 }
                 else{
                 oTitle.innerHTML = 'Not found';

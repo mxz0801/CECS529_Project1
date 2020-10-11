@@ -18,29 +18,34 @@ public class SearchEngine {
 	private List<String> word = new ArrayList<>();
 	private List<GsonDoc> file = new ArrayList<>();
     private KgramIndex kGramIndex = new KgramIndex();
-    DocumentCorpus corpusJs;
+	String directory;
+	private DocumentCorpus corpusJs;
+	private Index indexJs;
 
 
-    List<String> processed = new ArrayList<>();
+    //List<String> processed = new ArrayList<>();
 
 	public Index indexing(String dir) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
-        String directory = dir;
-        long startTime = System.currentTimeMillis();
+		if (directory !=dir) {
+			directory = dir;
+			long startTime = System.currentTimeMillis();
 
-        System.out.println("Timer started");
-        corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json", ".txt");   //read json file
-        //DocumentCorpus corpusTxt = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
+			System.out.println("Timer started");
+			corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json", ".txt");   //read json file
+			//DocumentCorpus corpusTxt = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
 //		DocumentCorpus combinedCorpus = DirectoryCorpus.loadDirctory(corpusJs,corpusTxt);
 
-        //System.out.println(corpusJs.getCorpusSize());
-        //KgramIndex kGramIndex = new KgramIndex();
-        Index indexJs = indexCorpus(corpusJs, kGramIndex);
-        //Index indexTxt = indexCorpus(corpusTxt);
-        long endTime = System.currentTimeMillis();
-        System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
-        vocab(indexJs.getVocabulary());
-        return indexJs;
-    }
+			//System.out.println(corpusJs.getCorpusSize());
+			//KgramIndex kGramIndex = new KgramIndex();
+			indexJs = indexCorpus(corpusJs, kGramIndex);
+			//Index indexTxt = indexCorpus(corpusTxt);
+			long endTime = System.currentTimeMillis();
+			System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
+			vocab(indexJs.getVocabulary());
+		}
+		return indexJs;
+
+	}
 	public List<GsonDoc> search (Index indexJs, String input) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
 	//public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
 		// TODO Auto-generated method stub
@@ -127,7 +132,7 @@ public class SearchEngine {
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		for(Document sDocument : corpus.getDocuments()) {
 			TokenStream stream = new EnglishTokenStream(sDocument.getContent());
-			System.out.println("Indexing file " + sDocument.getFileTitle());
+			//System.out.println("Indexing file " + sDocument.getFileTitle());
 			Iterable<String> token = stream.getTokens();
 			int position = 1;
 			for (String t : token) {
