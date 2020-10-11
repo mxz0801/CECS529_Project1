@@ -29,7 +29,8 @@ public class ImprovedTokenProcessor implements TokenProcessor {
 			//stemmer.stem();
 			processedToken.remove(i);
 			processedToken.add(i,tempProcess);
-			processedToken.add(stem(tempProcess));
+			if(stem(tempProcess).equals(tempProcess) == false)
+				processedToken.add(stem(tempProcess));
 		}
 		//all non-alphanumeric characters from the beginning and end of the token
 

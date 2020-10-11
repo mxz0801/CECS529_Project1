@@ -8,6 +8,7 @@ import java.util.List;
 import cecs429.index.Index;
 import cecs429.index.KgramIndex;
 import cecs429.index.Posting;
+import java.util.*;
 
 /**
  * Represents a phrase literal consisting of one or more terms that must occur in sequence.
@@ -37,34 +38,39 @@ public class PhraseLiteral implements Query {
 		// and positional merge them together.
 
 		List<Posting> result = new ArrayList<>();
-		List<Posting> bufferList = new ArrayList<>();
+
 		int gapOfDoc = 1; // use it to find the position
 		for (String s : mTerms) {
 			if (s.equals(mTerms.get(0))) {
-				bufferList = index.getPostings(s);
+				result = index.getPostings(s);
 				continue;
 			}
 			int i = 0;
 			int j = 0;
 
+			List<Posting> bufferList = new ArrayList<>();
 			// compare the docID in each two terms
-			while (i < bufferList.size() && j < index.getPostings(s).size()) {
+			while (i < result.size() && j < index.getPostings(s).size()) {
 				//find the same docID
-				if (bufferList.get(i).getDocumentId() == index.getPostings(s).get(j).getDocumentId()) {
+				if (result.get(i).getDocumentId() == index.getPostings(s).get(j).getDocumentId()) {
 					int m = 0;
 					int n = 0;
-
 					// compare the position
-					while (m < bufferList.get(i).getPosition().size() && n < index.getPostings(s).get(j).getPosition().size()) {
+					ArrayList<Integer> positionList = new ArrayList<>();
+					Posting p = new Posting(result.get(i).getDocumentId(), positionList);
+					while (m < result.get(i).getPosition().size() && n < index.getPostings(s).get(j).getPosition().size()) {
 						//find the position with phrase's order
-						if (index.getPostings(s).get(j).getPosition().get(n) == bufferList.get(i).getPosition().get(m) + gapOfDoc) {
-							result.add(bufferList.get(i));
-							gapOfDoc++;
-						} else if (index.getPostings(s).get(j).getPosition().get(n) <= bufferList.get(i).getPosition().get(m))
+						if (index.getPostings(s).get(j).getPosition().get(n) == result.get(i).getPosition().get(m) + gapOfDoc) {
+							positionList.add(result.get(i).getPosition().get(m));
+							break;
+						}
+						else if (index.getPostings(s).get(j).getPosition().get(n) <= result.get(i).getPosition().get(m))
 							n++;
-						else if (index.getPostings(s).get(j).getPosition().get(n) > bufferList.get(i).getPosition().get(m))
+						else if (index.getPostings(s).get(j).getPosition().get(n) > result.get(i).getPosition().get(m))
 							m++;
 					}
+					if(positionList.size() != 0)
+						bufferList.add(p);
 					i++;
 					j++;
 				}
@@ -73,7 +79,9 @@ public class PhraseLiteral implements Query {
 				else if (result.get(i).getDocumentId() > index.getPostings(s).get(j).getDocumentId())
 					j++;
 			}
-			bufferList = result;
+			if(bufferList != null)
+				gapOfDoc++;
+			result = new ArrayList<>(bufferList);
 		}
 		return result;
 	}
@@ -82,21 +90,21 @@ public class PhraseLiteral implements Query {
 	public List<Posting> getPostings(Index index, KgramIndex index2){
 		WildcardLiteral wildcardQuery = new WildcardLiteral();
 		List<Posting> result = new ArrayList<>();
-		List<Posting> bufferList = new ArrayList<>();
 		List<Posting> qList = new ArrayList<>();
 		int gapOfDoc = 1;
 		for(String s : mTerms){
 			if(s.contains("*") && s == mTerms.get(0)) {
 				wildcardQuery.setWildcardLiteral(s);
-				bufferList = wildcardQuery.getPostings(index, index2);
+				result = wildcardQuery.getPostings(index, index2);
 				continue;
 			}
 			else if(s.contains("*") == false && s == mTerms.get(0)){
-				bufferList = index.getPostings(s);
+				result = index.getPostings(s);
 				continue;
 			}
 			int i = 0;
 			int j = 0;
+			List<Posting> bufferList = new ArrayList<>();
 			if(s.contains("*")) {
 				wildcardQuery.setWildcardLiteral(s);
 				qList = wildcardQuery.getPostings(index, index2);
@@ -104,32 +112,40 @@ public class PhraseLiteral implements Query {
 			else
 				qList = index.getPostings(s);
 			// compare the docID in each two terms
-			while (i < bufferList.size() && j < qList.size()) {
+			while (i < result.size() && j < qList.size()) {
 				//find the same docID
-				if (bufferList.get(i).getDocumentId() == qList.get(j).getDocumentId()) {
+				if (result.get(i).getDocumentId() == qList.get(j).getDocumentId()) {
 					int m = 0;
 					int n = 0;
-
 					// compare the position
-					while (m < bufferList.get(i).getPosition().size() && n < qList.get(j).getPosition().size()) {
+					ArrayList<Integer> positionList = new ArrayList<>();
+					Posting p = new Posting(result.get(i).getDocumentId(), positionList);
+					while (m < result.get(i).getPosition().size() && n < qList.get(j).getPosition().size()) {
 						//find the position with phrase's order
-						if (index.getPostings(s).get(j).getPosition().get(n) == qList.get(j).getPosition().get(m) + gapOfDoc) {
-							result.add(bufferList.get(i));
-							gapOfDoc++;
-						} else if (qList.get(j).getPosition().get(n) <= bufferList.get(i).getPosition().get(m))
+						if (qList.get(j).getPosition().get(n) == result.get(i).getPosition().get(m) + gapOfDoc) {
+							positionList.add(result.get(i).getPosition().get(m));
+							m++;
 							n++;
-						else if (qList.get(j).getPosition().get(n) > bufferList.get(i).getPosition().get(m))
+						}
+						else if (qList.get(j).getPosition().get(n) <= result.get(i).getPosition().get(m))
+							n++;
+						else if (qList.get(j).getPosition().get(n) > result.get(i).getPosition().get(m))
 							m++;
 					}
+					if(positionList.size() != 0)
+						bufferList.add(p);
 					i++;
 					j++;
+
 				}
 				else if (result.get(i).getDocumentId() < qList.get(j).getDocumentId())
 					i++;
 				else if (result.get(i).getDocumentId() > qList.get(j).getDocumentId())
 					j++;
 			}
-			bufferList = result;
+			if(bufferList != null)
+				gapOfDoc++;
+			result = new ArrayList<>(bufferList);
 		}
 		return result;
 

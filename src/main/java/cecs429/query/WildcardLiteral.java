@@ -42,30 +42,38 @@ public class WildcardLiteral implements Query {
             }
         }
         List<String> intersection = new ArrayList<>();
-        List<String> bufferList = new ArrayList<>();
+        for(String s: kGrams){
+            if(s == kGrams.get(0)) {
+                intersection = index2.getGrams(s);
+                continue;
+            }
+            intersection.retainAll(index2.getGrams(s));
+        }
+        /*
         for(String s : kGrams){
             if(s == kGrams.get(0)) {
-                bufferList = index2.getGrams(s);
-                if(kGrams.size() == 1)
-                    intersection = bufferList;
+                intersection = index2.getGrams(s);
                 continue;
             }
             int i = 0;
             int j = 0;
-            while(i < bufferList.size() && j < index2.getGrams(s).size()){
-                if(bufferList.get(i).compareTo(index2.getGrams(s).get(j)) == 0) {
-                    if(intersection.contains(bufferList.get(i))==false)
-                        intersection.add(bufferList.get(i));
+            List<String> bufferList = new ArrayList<>();
+            while(i < intersection.size() && j < index2.getGrams(s).size()){
+                if(intersection.get(i).compareTo(index2.getGrams(s).get(j)) == 0) {
+                        bufferList.add(intersection.get(i));
                     i++;
                     j++;
                 }
-                else if(bufferList.get(i).compareTo(index2.getGrams(s).get(j)) < 0 )
+                else if(intersection.get(i).compareTo(index2.getGrams(s).get(j)) < 0 )
                     i++;
-                else  if(bufferList.get(i).compareTo(index2.getGrams(s).get(j)) > 0)
+                else  if(intersection.get(i).compareTo(index2.getGrams(s).get(j)) > 0)
                     j++;
             }
-            bufferList = intersection;
+            intersection = bufferList;
         }
+
+         */
+
         //post-filtering
         subString = mTerm.split("\\*");
         int subFlag = 1;
@@ -82,53 +90,78 @@ public class WildcardLiteral implements Query {
             }
         }
         List<Posting> result = new ArrayList<>();
-        List<Posting> bufferList2 = new ArrayList<>();
+
         //OR the posting
         for(String s : intersection){
-            if(intersection.size() == 1){
+            if (s == intersection.get(0)) {
                 result = index.getPostings(s);
+                continue;
             }
-            else {
-                if (s == intersection.get(0)) {
-                    bufferList2 = index.getPostings(s);
-                    continue;
+            List<Posting> bufferList = new ArrayList<>();
+            int i = 0;
+            int j = 0;
+            while (i <= result.size() && j <= index.getPostings(s).size()) {
+                if (i == result.size()) {
+                    Integer a = index.getPostings(s).size();
+                    for (; j < index.getPostings(s).size(); j++)
+                        bufferList.add(index.getPostings(s).get(j));
+                    break;
+                } else if (j == index.getPostings(s).size()) {
+                    for (; i < result.size(); i++)
+                        bufferList.add(result.get(i));
+                    break;
                 }
-                int i = 0;
-                int j = 0;
-                while (i <= bufferList2.size() && j <= index.getPostings(s).size()) {
-                    if (i == bufferList2.size()) {
-                        for (; j < index.getPostings(s).size(); j++)
-                            result.add(index.getPostings(s).get(j));
-                        break;
-                    } else if (j == index.getPostings(s).size()) {
-                        for (; i < bufferList2.size(); i++)
-                            result.add(bufferList2.get(i));
-                        break;
-                    }
 
-                    if (bufferList2.get(i).getDocumentId() == index.getPostings(s).get(j).getDocumentId()) {
-                        result.add(bufferList2.get(i));
-                        i++;
-                        j++;
-                    } else if (bufferList2.get(i).getDocumentId() < index.getPostings(s).get(j).getDocumentId()) {
-                        result.add(bufferList2.get(i));
-                        i++;
-                    } else if (bufferList2.get(i).getDocumentId() > index.getPostings(s).get(j).getDocumentId()) {
-                        result.add(index.getPostings(s).get(j));
-                        j++;
+
+                if (result.get(i).getDocumentId() == index.getPostings(s).get(j).getDocumentId()) {
+                    ArrayList<Integer> position = new ArrayList<>();
+
+                    //combine the position
+                    int h = 0;
+                    int k = 0;
+                    ArrayList<Integer> a = new ArrayList<>(result.get(i).getPosition());
+                    ArrayList<Integer> b = new ArrayList<>(index.getPostings(s).get(j).getPosition());
+                    while(h <= result.get(i).getPosition().size() && k <= index.getPostings(s).get(j).getPosition().size()){
+                        if(h == result.get(i).getPosition().size()){
+                            for(; k < index.getPostings(s).get(j).getPosition().size(); k++)
+                                position.add(index.getPostings(s).get(j).getPosition().get(k));
+                            break;
+                        }
+                        if(k == index.getPostings(s).get(j).getPosition().size()){
+                            for(; h < result.get(i).getPosition().size(); h++)
+                                position.add(result.get(i).getPosition().get(h));
+                            break;
+                        }
+                        if(result.get(i).getPosition().get(h) == index.getPostings(s).get(j).getPosition().get(k)) {
+                            position.add(result.get(i).getPosition().get(h));
+                            h++;
+                            k++;
+                        }
+                        else if(result.get(i).getPosition().get(h) < index.getPostings(s).get(j).getPosition().get(k)){
+                            position.add(result.get(i).getPosition().get(h));
+                            h++;
+                        }
+                        else  if(result.get(i).getPosition().get(h) > index.getPostings(s).get(j).getPosition().get(k)){
+                            position.add(index.getPostings(s).get(j).getPosition().get(k));
+                            k++;
+                        }
                     }
+                    Posting p = new Posting(result.get(i).getDocumentId(), position);
+                    bufferList.add(p);
+                    i++;
+                    j++;
+                } else if (result.get(i).getDocumentId() < index.getPostings(s).get(j).getDocumentId()) {
+                    bufferList.add(result.get(i));
+                    i++;
+                } else if (result.get(i).getDocumentId() > index.getPostings(s).get(j).getDocumentId()) {
+                    bufferList.add(index.getPostings(s).get(j));
+                    j++;
                 }
-//                for(int a = 0;a<result.size();a++){
-//                    bufferList2.add(result.get(a));
-//                }
-                bufferList2 = new ArrayList<>(result);
             }
-        }
-
-
+            result = new ArrayList<>(bufferList);
+            }
         return result;
-    }
-
+        }
 
     @Override
     public String toString() {

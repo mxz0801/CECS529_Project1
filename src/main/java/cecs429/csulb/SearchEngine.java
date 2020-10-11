@@ -71,33 +71,26 @@ public class SearchEngine {
 				//	vocab(indexJs.getVocabulary());
 				//System.out.println(indexJs.getVocabulary().size());
 				try {
-					String[] str = query.split(" ");
-					String newQuery = "";
-					for(String s : str){
-						if(s.equals(str[str.length-1]))
-							newQuery += getStem(s);
-						else
-							newQuery += getStem(s) + " ";
-					}
-					System.out.println(newQuery);
+					query = processQuery(query);
+					System.out.println(query);
 					BooleanQueryParser parser = new BooleanQueryParser();
-					Query queryPosting = parser.parseQuery(newQuery);
-					if (newQuery.contains("*")) {
+					Query queryPosting = parser.parseQuery(query);
+					if (query.contains("*")) {
 						for (Posting p : queryPosting.getPostings(indexJs, kGramIndex)) {
 							System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
-							System.out.println(queryPosting.getPostings(indexJs, kGramIndex).size());
-
 						}
+						System.out.println(queryPosting.getPostings(indexJs, kGramIndex).size());
 					} else {
 						for (Posting p : queryPosting.getPostings(indexJs)) {
 							System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
 						}
 						System.out.println(queryPosting.getPostings(indexJs).size());
+
 					}
 				} catch (Exception e) {
 				}
 			}
-			System.out.println("Done");
+			//System.out.println("Done");
 		}
 			//return file;
 
@@ -146,6 +139,28 @@ public class SearchEngine {
 //
 //		//processed.add(processedToken);
 //	}
+	public static String processQuery(String query) throws IllegalAccessException, ClassNotFoundException, InstantiationException {
+		String[] str = query.split(" ");
+		String newQuery = "";
+		for(String s : str){
+			if(s.equals(str[str.length-1])) {
+				if(s.contains("\"")){
+					s = s.substring(0, s.length() -1);
+					newQuery += getStem(s) +"\"";
+				}
+				else if(s.contains("*"))
+					newQuery += s;
+				else
+					newQuery += getStem(s);
+			}
+			else if(s.contains("*"))
+				newQuery += s + " ";
+			else
+				newQuery += getStem(s) + " ";
+		}
+		return newQuery;
+
+	}
 
 	public static String getStem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
 		ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
