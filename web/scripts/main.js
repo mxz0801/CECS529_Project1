@@ -112,7 +112,6 @@
                         addItem(oTitle,res[i],i)
                     }
                     oSearchResult.innerText='Total Documents: ' +len;
-                    window.printf="Total Documents: " +len;
                 }
                 else{
                 oTitle.innerHTML = 'Not found';
