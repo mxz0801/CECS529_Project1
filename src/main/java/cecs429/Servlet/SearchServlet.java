@@ -1,7 +1,9 @@
 package cecs429.Servlet;
 
 import cecs429.csulb.SearchEngine;
+import cecs429.documents.DocumentCorpus;
 import cecs429.documents.GsonDoc;
+import cecs429.index.Index;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
@@ -19,47 +21,66 @@ import java.util.List;
 public class SearchServlet extends HttpServlet {
     SearchEngine searchEngine = new SearchEngine();
     ObjectMapper mapper = new ObjectMapper();
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json");
         String dir = request.getParameter("dir");
         String input = request.getParameter("input");
 
-
         List<String> vocabulary = searchEngine.getVocab();
         List<String> temp = new ArrayList<>();
-        for(String vocab : vocabulary){
-            temp.add(vocab+"<br />");
+        for (String vocab : vocabulary) {
+            temp.add(vocab + "<br />");
         }
-        mapper.writeValue(response.getWriter(),temp);
+        mapper.writeValue(response.getWriter(), temp);
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Gson gson=new Gson();
+        Gson gson = new Gson();
         response.setContentType("application/json");
         String dir = request.getParameter("dir");
         String input = request.getParameter("input");
-
- //       try {
-  //          List<GsonDoc> result = searchEngine.search(dir,input);
+        Index index = null;
+        if (index == null) {
+            try {
+                index = searchEngine.indexing(dir);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                List<GsonDoc> result = searchEngine.search(index, input);
 //            for(GsonDoc gsonDoc : result){
 //                mapper.writeValue(response.getWriter(),gsonDoc.getTitle()+"  (" + gsonDoc.getFileName()+ ")");
 //            }
-  //          mapper.writeValue(response.getWriter(),result);
+                mapper.writeValue(response.getWriter(), result);
 
 
-
-  //      } catch (IllegalAccessException e) {
-   //         e.printStackTrace();
-    //    } catch (ClassNotFoundException e) {
-      //      e.printStackTrace();
-       // } catch (InstantiationException e) {
-       //     e.printStackTrace();
-     //   }
+                //      } catch (IllegalAccessException e) {
+                //         e.printStackTrace();
+                //    } catch (ClassNotFoundException e) {
+                //      e.printStackTrace();
+                // } catch (InstantiationException e) {
+                //     e.printStackTrace();
+                //   }
 //            response.getWriter().print(mapper.writeValueAsString(result.get(0)));
 //            List<String> stem = searchEngine.getStem();
 //            List<String> vocab = searchEngine.getVocab();
 //            response.getWriter().write();
 
 
-}
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
 }

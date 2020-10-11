@@ -111,7 +111,7 @@
                         // list +=item;
                         addItem(oTitle,res[i],i)
                     }
-
+                    window.printf("Total Documents: " +len);
                 }
                 else{
                 oTitle.innerHTML = 'Not found';

@@ -17,55 +17,75 @@ public class SearchEngine {
 	private List<Integer> ID = new ArrayList<>();
 	private List<String> word = new ArrayList<>();
 	private List<GsonDoc> file = new ArrayList<>();
+    private KgramIndex kGramIndex = new KgramIndex();
+    DocumentCorpus corpusJs;
 
-	List<String> processed = new ArrayList<>();
 
+    List<String> processed = new ArrayList<>();
 
-	//public List<GsonDoc> search (String dir, String input) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
-	public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
-		// TODO Auto-generated method stub
-		//	file.clear();
-		ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
-		String word = "ddd" ;
-		//String word1 = processor.processToken(word);
-		//System.out.println(word1);
-		System.out.println("Please enter the directory of the file: ");
-		//	String directory = dir;
-		Scanner sc = new Scanner(System.in);
-		String directory = sc.nextLine();
-		long startTime = System.currentTimeMillis();
+	public Index indexing(String dir) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
+        String directory = dir;
+        long startTime = System.currentTimeMillis();
 
-		System.out.println("Timer started");
-		DocumentCorpus corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json", ".txt");   //read json file
-		//DocumentCorpus corpusTxt = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
+        System.out.println("Timer started");
+        corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json", ".txt");   //read json file
+        //DocumentCorpus corpusTxt = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
 //		DocumentCorpus combinedCorpus = DirectoryCorpus.loadDirctory(corpusJs,corpusTxt);
 
-		//System.out.println(corpusJs.getCorpusSize());
-		KgramIndex kGramIndex = new KgramIndex();
-		Index indexJs = indexCorpus(corpusJs, kGramIndex);
-		//Index indexTxt = indexCorpus(corpusTxt);
-		long endTime = System.currentTimeMillis();
-		System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
+        //System.out.println(corpusJs.getCorpusSize());
+        //KgramIndex kGramIndex = new KgramIndex();
+        Index indexJs = indexCorpus(corpusJs, kGramIndex);
+        //Index indexTxt = indexCorpus(corpusTxt);
+        long endTime = System.currentTimeMillis();
+        System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
+        vocab(indexJs.getVocabulary());
+        return indexJs;
+    }
+	public List<GsonDoc> search (Index indexJs, String input) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
+	//public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
+		// TODO Auto-generated method stub
+        file.clear();
+//		ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
+//		String word = "ddd" ;
+//		//String word1 = processor.processToken(word);
+//		//System.out.println(word1);
+//		System.out.println("Please enter the directory of the file: ");
+//		//	String directory = dir;
+//		Scanner sc = new Scanner(System.in);
+//		String directory = sc.nextLine();
+//		long startTime = System.currentTimeMillis();
+//
+//		System.out.println("Timer started");
+//		DocumentCorpus corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json", ".txt");   //read json file
+//		//DocumentCorpus corpusTxt = DirectoryCorpus.loadTextDirectory(Paths.get(directory), ".txt");  //read txt file
+////		DocumentCorpus combinedCorpus = DirectoryCorpus.loadDirctory(corpusJs,corpusTxt);
+//
+//		//System.out.println(corpusJs.getCorpusSize());
+//		KgramIndex kGramIndex = new KgramIndex();
+//		Index indexJs = indexCorpus(corpusJs, kGramIndex);
+//		//Index indexTxt = indexCorpus(corpusTxt);
+//		long endTime = System.currentTimeMillis();
+//		System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
 
-		while(true){
-			System.out.print("Pleas enter the term to search for: ");
-			String query = sc.nextLine();
-			if(query.equals("quit")) {
-				System.out.println("Exit the search.");
-				break;
-			}else if(query.contains(":stem")){
-				String[] spliter = query.split(" ");
-				String stemToken = spliter[1];
-				ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
-				String processedToken = processor2.stem(stemToken);
-				System.out.println(stemToken + "-->" + processedToken);
-			}else if(query.equals(":vocab")){
-				for(int i=0;i<1000;i++){
-					System.out.println(indexJs.getVocabulary().get(i));
-				}
-				System.out.println(indexJs.getVocabulary().size());
-			}
-			else{
+//		while(true){
+//			System.out.print("Pleas enter the term to search for: ");
+			String query = input;
+//			if(query.equals("quit")) {
+//				System.out.println("Exit the search.");
+//				break;
+//			}else if(query.contains(":stem")){
+//				String[] spliter = query.split(" ");
+//				String stemToken = spliter[1];
+//				ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
+//				String processedToken = processor2.stem(stemToken);
+//				System.out.println(stemToken + "-->" + processedToken);
+//			}else if(query.equals(":vocab")){
+//				for(int i=0;i<1000;i++){
+//					System.out.println(indexJs.getVocabulary().get(i));
+//				}
+//				System.out.println(indexJs.getVocabulary().size());
+//			}
+//			else{
 				//System.out.println(indexJs.getVocabulary());
 
 				//	vocab(indexJs.getVocabulary());
@@ -78,21 +98,23 @@ public class SearchEngine {
 					if (query.contains("*")) {
 						for (Posting p : queryPosting.getPostings(indexJs, kGramIndex)) {
 							System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
+							file.add(corpusJs.getDocument(p.getDocumentId()).getJson());
 						}
 						System.out.println(queryPosting.getPostings(indexJs, kGramIndex).size());
 					} else {
 						for (Posting p : queryPosting.getPostings(indexJs)) {
 							System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
-						}
+                            file.add(corpusJs.getDocument(p.getDocumentId()).getJson());
+                        }
 						System.out.println(queryPosting.getPostings(indexJs).size());
 
 					}
 				} catch (Exception e) {
 				}
-			}
+//			}
 			//System.out.println("Done");
-		}
-			//return file;
+//		}
+			return file;
 
 	}
 
@@ -105,7 +127,7 @@ public class SearchEngine {
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		for(Document sDocument : corpus.getDocuments()) {
 			TokenStream stream = new EnglishTokenStream(sDocument.getContent());
-			//System.out.println("Indexing file " + sDocument.getFileTitle());
+			System.out.println("Indexing file " + sDocument.getFileTitle());
 			Iterable<String> token = stream.getTokens();
 			int position = 1;
 			for (String t : token) {
@@ -123,7 +145,7 @@ public class SearchEngine {
 		for(String s: vocab){
 			kgramIndex.addTerm(s);
 		}
-		
+
 		return index;
 	}
 
@@ -170,7 +192,7 @@ public class SearchEngine {
 	public void vocab(List<String> word){
 		if(word.size()>1000)
 		{
-			word = word.subList(0,100);
+			word = word.subList(0,1000);
 		}
 		this.word = word;
 	}
