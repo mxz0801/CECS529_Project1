@@ -18,7 +18,6 @@ public class SearchEngine {
 	private List<String> word = new ArrayList<>();
 	private KgramIndex kGramIndex = new KgramIndex();
 	private List<GsonDoc> file = new ArrayList<>();
-	String directory;
 	private DocumentCorpus corpusJs;
 	private Index indexJs;
 

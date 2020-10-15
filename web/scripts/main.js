@@ -68,6 +68,7 @@
 
         oSearch.addEventListener('click', function (){
             oTitle.innerHTML='';
+            oSearchResult.innerHTML = '';
             var elem = document.getElementById("container");
             if(elem){
                 elem.remove();
@@ -192,13 +193,13 @@
 
     function addItem(itemList,item,i){
         var section = $create('div', {className: 'item-title'});
-        var show = $create('button',{id:'btn'+i});
+        // var show = $create('button',{id:'btn'+i});
         var body = $create('p',{id: 'content'+i, style:'display:none'})
         body.innerHTML = item.body;
         var title = $create('a',{id:'link'+i, href:item.url,target:'_blank'});
         title.innerHTML = item.title;
         section.appendChild(title);
-        section.appendChild(show);
+        //section.appendChild(show);
         section.appendChild(body);
 
         container.appendChild(section);
