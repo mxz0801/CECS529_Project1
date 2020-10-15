@@ -27,7 +27,7 @@ public class OrQuery implements Query {
 		List<Posting> result = new ArrayList<>();
 
 		// TODO: program the merge for an OrQuery, by gathering the postings of the composed Query children and
-		// unioning the resulting postings.
+		// unionizing the resulting postings.
 		for(Query q : mChildren){
 			if(q == mChildren.get(0)) {
 				result = q.getPostings(index);

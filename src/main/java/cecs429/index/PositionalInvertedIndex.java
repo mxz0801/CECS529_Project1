@@ -6,15 +6,15 @@ import java.util.*;
  */
 
 public class PositionalInvertedIndex implements Index {
-	private Map<String,ArrayList<Posting>> mIndex= new HashMap<String, ArrayList<Posting>>();
-	private List<String> mVocabulary = new ArrayList<String>();
+	private Map<String,ArrayList<Posting>> mIndex= new HashMap<>();
+	private List<String> mVocabulary = new ArrayList<>();
 	
 	/**
 	 * Associates the given documentId and position with the given term in the index.
 	 */
 	public void addTerm(String term, int documentId, int position) {
-		ArrayList<Posting> postList = new ArrayList<Posting>();
-		ArrayList<Integer> positionList = new ArrayList<Integer>();
+		ArrayList<Posting> postList = new ArrayList<>();
+		ArrayList<Integer> positionList = new ArrayList<>();
 		positionList.add(position);
 		Posting post = new Posting(documentId, positionList);
 		postList.add(post);
@@ -30,12 +30,17 @@ public class PositionalInvertedIndex implements Index {
 	
 	@Override
 	public List<Posting> getPostings(String term) {
-		return mIndex.get(term);
+		ArrayList<Posting> p = new ArrayList<>();
+		if(mIndex.get(term) == null)
+			return  p;
+		else
+			return mIndex.get(term);
 	}
-	
+
 	public List<String> getVocabulary() {
 		Collections.sort(mVocabulary);
 		return mVocabulary;
 	}
+
 
 }

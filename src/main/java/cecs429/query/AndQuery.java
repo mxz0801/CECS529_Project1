@@ -53,14 +53,14 @@ public class AndQuery implements Query {
 	public List<Posting> getPostings(Index index, KgramIndex index2){
 		WildcardLiteral wildcardQuery = new WildcardLiteral();
 		List<Posting> result = new ArrayList<>();
-		List<Posting> qList = new ArrayList<>();
+		List<Posting> qList;
 		for(Query q: mChildren){
 			if(q.toString().contains("*") && q == mChildren.get(0)) {
 				wildcardQuery.setWildcardLiteral(q.toString());
 				result = wildcardQuery.getPostings(index, index2);
 				continue;
 			}
-			else if(q.toString().contains("*") == false && q == mChildren.get(0)){
+			else if(!q.toString().contains("*") && q == mChildren.get(0)){
 				result = index.getPostings(q.toString());
 				continue;
 			}

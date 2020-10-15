@@ -13,9 +13,7 @@ public class ImprovedTokenProcessor implements TokenProcessor {
 		if(token.contains("-")){
 			processedToken.add(token.replaceAll("\\-",""));
 			String[] temp = token.split("-");
-			for(int i=0;i<temp.length;i++){
-				processedToken.add(temp[i]);
-			}
+			Collections.addAll(processedToken, temp);
 		}else{
 			processedToken.add(token);
 		}
@@ -23,21 +21,11 @@ public class ImprovedTokenProcessor implements TokenProcessor {
 		for(int i=0;i<size;i++){
 			String tempProcess = processedToken.get(i).replaceAll("\\W", "")
 					.replaceAll("^[^a-zA-Z0-9\\s]+|[^a-zA-Z0-9\\s]+$", "").replaceAll("['\"]", "").toLowerCase();
-			//tempProcess = tempProcess.replaceAll("^[^a-zA-Z0-9\\s]+|[^a-zA-Z0-9\\s]+$", "").toLowerCase();
-			//tempProcess = tempProcess.replaceAll("['\"]", "");
-			//stemmer.setCurrent(tempProcess);
-			//stemmer.stem();
 			processedToken.remove(i);
 			processedToken.add(i,tempProcess);
-			if(stem(tempProcess).equals(tempProcess) == false)
+			if(!stem(tempProcess).equals(tempProcess))
 				processedToken.add(stem(tempProcess));
 		}
-		//all non-alphanumeric characters from the beginning and end of the token
-
-		//processedToken.add(processedToken.replaceAll("['\"]", ""));
-		//remove apostropes and quotation marks
-
-
 		return processedToken;
 
 

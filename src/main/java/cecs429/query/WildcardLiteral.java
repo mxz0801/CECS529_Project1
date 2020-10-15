@@ -3,6 +3,7 @@ package cecs429.query;
 import cecs429.index.Index;
 import cecs429.index.KgramIndex;
 import cecs429.index.Posting;
+import cecs429.text.ImprovedTokenProcessor;
 
 import java.util.*;
 
@@ -29,7 +30,7 @@ public class WildcardLiteral implements Query {
     public List<Posting> getPostings(Index index, KgramIndex index2) {
         String dollar = Character.toString('$');
         String newTerm = dollar + mTerm + dollar;
-        List<String> kGrams = new ArrayList<String>();
+        List<String> kGrams = new ArrayList<>();
         String[] subString = newTerm.split("\\*");
         for (String sub : subString) {
             if(sub.length()==1 && sub.contains("$"))
@@ -41,13 +42,15 @@ public class WildcardLiteral implements Query {
                     kGrams.add(sub.substring(i, i + 3));
             }
         }
+
         List<String> intersection = new ArrayList<>();
         for(String s: kGrams){
-            if(s == kGrams.get(0)) {
-                intersection = index2.getGrams(s);
+            if(s.equals(kGrams.get(0))) {
+                intersection.addAll(index2.getGrams(s));
                 continue;
             }
-            intersection.retainAll(index2.getGrams(s));
+            List<String> bufferList = new ArrayList<>(index2.getGrams(s));
+            intersection.retainAll(bufferList);
         }
         /*
         for(String s : kGrams){
@@ -77,6 +80,15 @@ public class WildcardLiteral implements Query {
         //post-filtering
         subString = mTerm.split("\\*");
         int subFlag = 1;
+        StringBuilder reg = new StringBuilder(subString[0] + ".*");
+        while (subFlag < subString.length) {
+            reg.append(subString[subFlag]).append(".*");
+            subFlag++;
+        }
+        intersection.removeIf(s -> !mTerm.matches(reg.toString()));
+        /*
+        subString = mTerm.split("\\*");
+        int subFlag = 1;
         String reg = subString[0] + ".*";
         while (subFlag < subString.length) {
             reg = reg + subString[subFlag] + ".*";
@@ -85,15 +97,25 @@ public class WildcardLiteral implements Query {
         Iterator<String> iterator = intersection.iterator();
         while(iterator.hasNext()){
             String s = iterator.next();
-            if(mTerm.matches(reg) == false){
+            if(!mTerm.matches(reg)){
                 iterator.remove();
             }
         }
+         */
         List<Posting> result = new ArrayList<>();
 
         //OR the posting
-        for(String s : intersection){
-            if (s == intersection.get(0)) {
+        for(String str : intersection) {
+
+            String s = "";
+            try {
+                s = getStem(str);
+            } catch (IllegalAccessException | InstantiationException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
+
+            if (s.equals(intersection.get(0))) {
                 result = index.getPostings(s);
                 continue;
             }
@@ -102,7 +124,6 @@ public class WildcardLiteral implements Query {
             int j = 0;
             while (i <= result.size() && j <= index.getPostings(s).size()) {
                 if (i == result.size()) {
-                    Integer a = index.getPostings(s).size();
                     for (; j < index.getPostings(s).size(); j++)
                         bufferList.add(index.getPostings(s).get(j));
                     break;
@@ -111,11 +132,9 @@ public class WildcardLiteral implements Query {
                         bufferList.add(result.get(i));
                     break;
                 }
-
-
                 if (result.get(i).getDocumentId() == index.getPostings(s).get(j).getDocumentId()) {
+/*
                     ArrayList<Integer> position = new ArrayList<>();
-
                     //combine the position
                     int h = 0;
                     int k = 0;
@@ -148,6 +167,11 @@ public class WildcardLiteral implements Query {
                     }
                     Posting p = new Posting(result.get(i).getDocumentId(), position);
                     bufferList.add(p);
+
+ */
+
+
+                  bufferList.add(result.get(i));
                     i++;
                     j++;
                 } else if (result.get(i).getDocumentId() < index.getPostings(s).get(j).getDocumentId()) {
@@ -159,12 +183,18 @@ public class WildcardLiteral implements Query {
                 }
             }
             result = new ArrayList<>(bufferList);
-            }
+        }
         return result;
         }
 
+    public static String getStem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+        ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
+        return processor2.stem(input);
+    }
     @Override
     public String toString() {
         return mTerm;
     }
 }
+
+

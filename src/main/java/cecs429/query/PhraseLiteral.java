@@ -8,7 +8,6 @@ import java.util.List;
 import cecs429.index.Index;
 import cecs429.index.KgramIndex;
 import cecs429.index.Posting;
-import java.util.*;
 
 /**
  * Represents a phrase literal consisting of one or more terms that must occur in sequence.
@@ -79,8 +78,7 @@ public class PhraseLiteral implements Query {
 				else if (result.get(i).getDocumentId() > index.getPostings(s).get(j).getDocumentId())
 					j++;
 			}
-			if(bufferList != null)
-				gapOfDoc++;
+			gapOfDoc++;
 			result = new ArrayList<>(bufferList);
 		}
 		return result;
@@ -90,15 +88,15 @@ public class PhraseLiteral implements Query {
 	public List<Posting> getPostings(Index index, KgramIndex index2){
 		WildcardLiteral wildcardQuery = new WildcardLiteral();
 		List<Posting> result = new ArrayList<>();
-		List<Posting> qList = new ArrayList<>();
+		List<Posting> qList;
 		int gapOfDoc = 1;
 		for(String s : mTerms){
-			if(s.contains("*") && s == mTerms.get(0)) {
+			if(s.contains("*") && s.equals(mTerms.get(0))) {
 				wildcardQuery.setWildcardLiteral(s);
 				result = wildcardQuery.getPostings(index, index2);
 				continue;
 			}
-			else if(s.contains("*") == false && s == mTerms.get(0)){
+			else if(!s.contains("*") && s.equals(mTerms.get(0))){
 				result = index.getPostings(s);
 				continue;
 			}
@@ -143,8 +141,7 @@ public class PhraseLiteral implements Query {
 				else if (result.get(i).getDocumentId() > qList.get(j).getDocumentId())
 					j++;
 			}
-			if(bufferList != null)
-				gapOfDoc++;
+			gapOfDoc++;
 			result = new ArrayList<>(bufferList);
 		}
 		return result;

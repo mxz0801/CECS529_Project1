@@ -3,7 +3,7 @@ package cecs429.index;
 import java.util.ArrayList;
 
 /**
- * A Posting encapulates a document ID associated with a search query component.
+ * A Posting encapsulates a document ID associated with a search query component.
  */
 public class Posting {
 	private int mDocumentId;

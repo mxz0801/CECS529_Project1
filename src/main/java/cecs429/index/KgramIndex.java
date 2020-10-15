@@ -3,18 +3,18 @@ package cecs429.index;
 import java.util.*;
 
 public class KgramIndex implements Index{
-    private Map<String, ArrayList<String>> kIndex= new HashMap<String, ArrayList<String>>();
-    private List<String> mVocabulary = new ArrayList<String>();
+    private Map<String, ArrayList<String>> kIndex= new HashMap<>();
+    private List<String> mVocabulary = new ArrayList<>();
 
     /**
      * Build 3-gram for the given term
      */
     public void addTerm(String term) {
-        ArrayList<String> kGram = new ArrayList<String>();
+        ArrayList<String> kGram = new ArrayList<>();
 
-        if (term.length() < 3 && term != null) {
+        if (term.length() < 3) {
             if (kIndex.get(term) == null) {
-                ArrayList<String> TermList = new ArrayList<String>();
+                ArrayList<String> TermList = new ArrayList<>();
                 TermList.add(term);
                 kIndex.put(term, TermList);
             }
@@ -33,7 +33,7 @@ public class KgramIndex implements Index{
             }
             for (String s : kGram) {
                 if (kIndex.get(s) == null) {
-                    ArrayList<String> TermList = new ArrayList<String>();
+                    ArrayList<String> TermList = new ArrayList<>();
                     TermList.add(term);
                     kIndex.put(s, TermList);
                 } else {
