@@ -22,10 +22,8 @@ public class SearchEngine {
 	private DocumentCorpus corpusJs;
 	private Index indexJs;
 
-
-
 	public Index indexing(String dir) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
-		if (directory !=dir) {
+		if (!directory.equals(dir)) {
 			directory = dir;
 			long startTime = System.currentTimeMillis();
 
@@ -43,9 +41,7 @@ public class SearchEngine {
 	public List<GsonDoc> search (Index indexJs, String input) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
 		// TODO Auto-generated method stub
 		file.clear();
-
 		String query = input;
-
 		try {
 			query = processQuery(query);
 			System.out.println(query);
@@ -56,25 +52,92 @@ public class SearchEngine {
 				for (Posting p : wildcardResult) {
 					System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
 					file.add(corpusJs.getDocument(p.getDocumentId()).getJson());
-
 				}
 				System.out.println(wildcardResult.size());
 			} else {
 				for (Posting p : queryPosting.getPostings(indexJs)) {
 					System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
 					file.add(corpusJs.getDocument(p.getDocumentId()).getJson());
-
 				}
 				System.out.println(queryPosting.getPostings(indexJs).size());
-
 			}
 		} catch (Exception e) {
 		}
-
 		return file;
 
 	}
 
+	private static Index indexCorpus(DocumentCorpus corpus, KgramIndex kgramIndex) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+		Set<String> vocab = new HashSet<>();
+		ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
+		PositionalInvertedIndex index = new PositionalInvertedIndex();
+		for(Document sDocument : corpus.getDocuments()) {
+			TokenStream stream = new EnglishTokenStream(sDocument.getContent());
+			Iterable<String> token = stream.getTokens();
+			int position = 1;
+			for (String t : token) {
+				vocab.add(t.replaceAll("\\W", "").toLowerCase());
+				List<String> word = processor.processToken(t);
+				if (word.size() > 0) {
+					for (String s : word)
+						index.addTerm(s, sDocument.getId(), position);
+					position++;
+				}
+			}
+			stream.close();
+		}
+
+		for(String s: vocab){
+			kgramIndex.addTerm(s);
+		}
+		
+		return index;
+	}
+
+	public void setID(List<Integer> ID){
+		this.ID = ID;
+	}
+	public List<Integer> getID(){
+		return ID;
+	}
+	public static String processQuery(String query) throws IllegalAccessException, ClassNotFoundException, InstantiationException {
+		String[] str = query.split(" ");
+		StringBuilder newQuery = new StringBuilder();
+		for(String s : str){
+			if(s.equals(str[str.length-1])) {
+				if(s.contains("\"")){
+					s = s.substring(0, s.length() -1);
+					newQuery.append(getStem(s)).append("\"");
+				}
+				else if(s.contains("*"))
+					newQuery.append(s);
+				else
+					newQuery.append(getStem(s));
+			}
+			else if(s.contains("*"))
+				newQuery.append(s).append(" ");
+			else
+				newQuery.append(getStem(s)).append(" ");
+		}
+		return newQuery.toString();
+
+	}
+
+	public static String getStem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+		ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
+		return processor2.stem(input);
+	}
+	public void vocab(List<String> word){
+		if(word.size()>1000)
+		{
+			word = word.subList(0,100);
+		}
+		this.word = word;
+	}
+	public List<String> getVocab(){
+			return word;
+	}
+}
 
 //	public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
 //	// TODO Auto-generated method stub
@@ -140,82 +203,3 @@ public class SearchEngine {
 //		}
 //
 //}
-
-	private static Index indexCorpus(DocumentCorpus corpus, KgramIndex kgramIndex) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
-		Set<String> vocab = new HashSet<>();
-		ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
-		PositionalInvertedIndex index = new PositionalInvertedIndex();
-		for(Document sDocument : corpus.getDocuments()) {
-			TokenStream stream = new EnglishTokenStream(sDocument.getContent());
-			//System.out.println("Indexing file " + sDocument.getFileTitle());
-			Iterable<String> token = stream.getTokens();
-			int position = 1;
-			for (String t : token) {
-				vocab.add(t.replaceAll("\\W", "").toLowerCase());
-				List<String> word = processor.processToken(t);
-				if (word.size() > 0) {
-					for (String s : word)
-						index.addTerm(s, sDocument.getId(), position);
-					position++;
-				}
-			}
-			stream.close();
-		}
-
-		for(String s: vocab){
-			kgramIndex.addTerm(s);
-		}
-		
-		return index;
-	}
-
-
-
-	public void setID(List<Integer> ID){
-		this.ID = ID;
-	}
-	public List<Integer> getID(){
-		return ID;
-	}
-//	public void stem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
-//
-//		//processed.add(processedToken);
-//	}
-	public static String processQuery(String query) throws IllegalAccessException, ClassNotFoundException, InstantiationException {
-		String[] str = query.split(" ");
-		StringBuilder newQuery = new StringBuilder();
-		for(String s : str){
-			if(s.equals(str[str.length-1])) {
-				if(s.contains("\"")){
-					s = s.substring(0, s.length() -1);
-					newQuery.append(getStem(s)).append("\"");
-				}
-				else if(s.contains("*"))
-					newQuery.append(s);
-				else
-					newQuery.append(getStem(s));
-			}
-			else if(s.contains("*"))
-				newQuery.append(s).append(" ");
-			else
-				newQuery.append(getStem(s)).append(" ");
-		}
-		return newQuery.toString();
-
-	}
-
-	public static String getStem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
-		ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
-		return processor2.stem(input);
-	}
-	public void vocab(List<String> word){
-		if(word.size()>1000)
-		{
-			word = word.subList(0,100);
-		}
-		this.word = word;
-	}
-	public List<String> getVocab(){
-			return word;
-	}
-}

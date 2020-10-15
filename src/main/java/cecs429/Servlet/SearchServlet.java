@@ -1,13 +1,10 @@
 package cecs429.Servlet;
 
 import cecs429.csulb.SearchEngine;
-import cecs429.documents.DocumentCorpus;
 import cecs429.documents.GsonDoc;
 import cecs429.index.Index;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -56,25 +53,7 @@ public class SearchServlet extends HttpServlet {
         else{
             try {
                 List<GsonDoc> result = searchEngine.search(index, input);
-//            for(GsonDoc gsonDoc : result){
-//                mapper.writeValue(response.getWriter(),gsonDoc.getTitle()+"  (" + gsonDoc.getFileName()+ ")");
-//            }
                 mapper.writeValue(response.getWriter(), result);
-
-
-                //      } catch (IllegalAccessException e) {
-                //         e.printStackTrace();
-                //    } catch (ClassNotFoundException e) {
-                //      e.printStackTrace();
-                // } catch (InstantiationException e) {
-                //     e.printStackTrace();
-                //   }
-//            response.getWriter().print(mapper.writeValueAsString(result.get(0)));
-//            List<String> stem = searchEngine.getStem();
-//            List<String> vocab = searchEngine.getVocab();
-//            response.getWriter().write();
-
-
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             } catch (InstantiationException e) {

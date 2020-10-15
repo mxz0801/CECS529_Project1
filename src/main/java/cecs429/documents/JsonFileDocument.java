@@ -2,7 +2,6 @@ package cecs429.documents;
 
 import com.google.gson.Gson;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -44,13 +43,6 @@ public class JsonFileDocument implements FileDocument{
 
 			gsonDoc = gson.fromJson(reader,GsonDoc.class);
 			gsonDoc.setFileName(mFilePath.getFileName().toString());
-//			//convert to json object
-//			StringBuffer sb = new StringBuffer();
-//			String line = null;
-//			while((line = reader.readLine()) != null) {
-//				sb.append(line);
-//			}
-//			mJsonObject = gson.fromJson(sb.toString(), GsonDoc.class);
 			reader.close();
 			return Files.newBufferedReader(mFilePath);
 		} catch (IOException e) {
