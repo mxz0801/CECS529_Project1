@@ -16,84 +16,55 @@ public class SearchEngine {
 	private List<String> result = new ArrayList<>();
 	private List<Integer> ID = new ArrayList<>();
 	private List<String> word = new ArrayList<>();
+	private KgramIndex kGramIndex = new KgramIndex();
 	private List<GsonDoc> file = new ArrayList<>();
+	String directory;
+	private DocumentCorpus corpusJs;
+	private Index indexJs;
 
-	List<String> processed = new ArrayList<>();
+	public Index indexing(String dir) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
+			String directory = dir;
+			long startTime = System.currentTimeMillis();
 
+			System.out.println("Timer started");
+			corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json", ".txt");   //read json file
 
-	//public List<GsonDoc> search (String dir, String input) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
-	public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
-		// TODO Auto-generated method stub
-		//	file.clear();
-		//ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
-		//String word1 = processor.processToken(word);
-		//System.out.println(word1);
-		System.out.println("Please enter the directory of the file: ");
-		//	String directory = dir;
-		Scanner sc = new Scanner(System.in);
-		String directory = sc.nextLine();
-		long startTime = System.currentTimeMillis();
+			indexJs = indexCorpus(corpusJs, kGramIndex);
+			long endTime = System.currentTimeMillis();
+			System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
+			vocab(indexJs.getVocabulary());
 
-		System.out.println("Timer started");
-		DocumentCorpus corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json", ".txt");   //read json file
-
-		KgramIndex kGramIndex = new KgramIndex();
-		Index indexJs = indexCorpus(corpusJs, kGramIndex);
-		long endTime = System.currentTimeMillis();
-		System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
-
-		while(true){
-			System.out.print("Pleas enter the term to search for: ");
-			String query = sc.nextLine();
-			if(query.equals("quit")) {
-				System.out.println("Exit the search.");
-				break;
-			}else if(query.contains(":stem")){
-				String[] splitter = query.split(" ");
-				String stemToken = splitter[1];
-				ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
-				String processedToken = processor2.stem(stemToken);
-				System.out.println(stemToken + "-->" + processedToken);
-			}else if(query.equals(":vocab")){
-				for(int i=0;i<1000;i++){
-					System.out.println(indexJs.getVocabulary().get(i));
-				}
-				System.out.println(indexJs.getVocabulary().size());
-			}
-			else{
-				//System.out.println(indexJs.getVocabulary());
-
-				//	vocab(indexJs.getVocabulary());
-				//System.out.println(indexJs.getVocabulary().size());
-				try {
-					query = processQuery(query);
-					System.out.println(query);
-					BooleanQueryParser parser = new BooleanQueryParser();
-					Query queryPosting = parser.parseQuery(query);
-					if (query.contains("*")) {
-						List<Posting> wildcardResult = new ArrayList<>(queryPosting.getPostings(indexJs, kGramIndex));
-						for (Posting p : wildcardResult) {
-							System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
-						}
-						System.out.println(wildcardResult.size());
-					} else {
-						for (Posting p : queryPosting.getPostings(indexJs)) {
-							System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
-						}
-						System.out.println(queryPosting.getPostings(indexJs).size());
-
-					}
-				} catch (Exception e) {
-				}
-			}
-			//System.out.println("Done");
-		}
-			//return file;
+		return indexJs;
 
 	}
+	public List<GsonDoc> search (Index indexJs, String input) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
+		// TODO Auto-generated method stub
+		file.clear();
+		String query = input;
+		try {
+			query = processQuery(query);
+			System.out.println(query);
+			BooleanQueryParser parser = new BooleanQueryParser();
+			Query queryPosting = parser.parseQuery(query);
+			if (query.contains("*")) {
+				List<Posting> wildcardResult = new ArrayList<>(queryPosting.getPostings(indexJs, kGramIndex));
+				for (Posting p : wildcardResult) {
+					System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
+					file.add(corpusJs.getDocument(p.getDocumentId()).getJson());
+				}
+				System.out.println(wildcardResult.size());
+			} else {
+				for (Posting p : queryPosting.getPostings(indexJs)) {
+					System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
+					file.add(corpusJs.getDocument(p.getDocumentId()).getJson());
+				}
+				System.out.println(queryPosting.getPostings(indexJs).size());
+			}
+		} catch (Exception e) {
+		}
+		return file;
 
-
-
+	}
 
 	private static Index indexCorpus(DocumentCorpus corpus, KgramIndex kgramIndex) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		Set<String> vocab = new HashSet<>();
@@ -101,7 +72,6 @@ public class SearchEngine {
 		PositionalInvertedIndex index = new PositionalInvertedIndex();
 		for(Document sDocument : corpus.getDocuments()) {
 			TokenStream stream = new EnglishTokenStream(sDocument.getContent());
-			//System.out.println("Indexing file " + sDocument.getFileTitle());
 			Iterable<String> token = stream.getTokens();
 			int position = 1;
 			for (String t : token) {
@@ -123,18 +93,12 @@ public class SearchEngine {
 		return index;
 	}
 
-
-
 	public void setID(List<Integer> ID){
 		this.ID = ID;
 	}
 	public List<Integer> getID(){
 		return ID;
 	}
-//	public void stem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
-//
-//		//processed.add(processedToken);
-//	}
 	public static String processQuery(String query) throws IllegalAccessException, ClassNotFoundException, InstantiationException {
 		String[] str = query.split(" ");
 		StringBuilder newQuery = new StringBuilder();
@@ -173,3 +137,68 @@ public class SearchEngine {
 			return word;
 	}
 }
+
+//	public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
+//	// TODO Auto-generated method stub
+//		System.out.println("Please enter the directory of the file: ");
+//		Scanner sc = new Scanner(System.in);
+//		String directory = sc.nextLine();
+//		long startTime = System.currentTimeMillis();
+//
+//		System.out.println("Timer started");
+//		DocumentCorpus corpusJs = DirectoryCorpus.loadJsonDirectory(Paths.get(directory), ".json", ".txt");   //read json file
+//
+//		KgramIndex kGramIndex = new KgramIndex();
+//		Index indexJs = indexCorpus(corpusJs, kGramIndex);
+//		//Index indexTxt = indexCorpus(corpusTxt);
+//		long endTime = System.currentTimeMillis();
+//		System.out.println("It took " + (endTime - startTime) + " milliseconds to index");
+//
+//			while(true){
+//			System.out.print("Pleas enter the term to search for: ");
+//			String query = sc.nextLine();
+//			if(query.equals("quit")) {
+//				System.out.println("Exit the search.");
+//				break;
+//			}else if(query.contains(":stem")){
+//				String[] spliter = query.split(" ");
+//				String stemToken = spliter[1];
+//				ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
+//				String processedToken = processor2.stem(stemToken);
+//				System.out.println(stemToken + "-->" + processedToken);
+//			}else if(query.equals(":vocab")){
+//				for(int i=0;i<1000;i++){
+//					System.out.println(indexJs.getVocabulary().get(i));
+//				}
+//				System.out.println(indexJs.getVocabulary().size());
+//			}
+//			else{
+//			System.out.println(indexJs.getVocabulary());
+//
+//		try {
+//		query = processQuery(query);
+//		System.out.println(query);
+//		BooleanQueryParser parser = new BooleanQueryParser();
+//		Query queryPosting = parser.parseQuery(query);
+//		if (query.contains("*")) {
+//			List<Posting> wildcardResult = new ArrayList<>(queryPosting.getPostings(indexJs, kGramIndex));
+//			for (Posting p : wildcardResult) {
+//				System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
+//
+//			}
+//			System.out.println(wildcardResult.size());
+//		} else {
+//			for (Posting p : queryPosting.getPostings(indexJs)) {
+//				System.out.println("Document: " + corpusJs.getDocument(p.getDocumentId()).getFileTitle());
+//
+//			}
+//			System.out.println(queryPosting.getPostings(indexJs).size());
+//
+//		}
+//	} catch (Exception e) {
+//	}
+//			}
+//	System.out.println("Done");
+//		}
+//
+//}
