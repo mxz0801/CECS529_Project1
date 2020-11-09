@@ -93,6 +93,7 @@ public class DiskPositionalIndex implements Index{
         while(dataInputStream.available()>0){
             int id = (int) dataInputStream.readDouble();
             if(id == docId){
+                Double i = dataInputStream.readDouble();
                 return dataInputStream.readDouble();
             }else{
                 dataInputStream.skipBytes(8);

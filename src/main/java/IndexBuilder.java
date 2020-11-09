@@ -9,6 +9,10 @@ import cecs429.index.*;
 import cecs429.query.BooleanQueryParser;
 import cecs429.query.Query;
 import cecs429.text.*;
+import cecs429.weight.Context;
+import cecs429.weight.Default;
+import cecs429.weight.Strategy;
+import cecs429.weight.WeightModeFactory;
 import cecs429.writer.DiskIndexWriter;
 
 public class IndexBuilder {
@@ -34,63 +38,27 @@ public class IndexBuilder {
         String mode = sc.nextLine();
         switch (Integer.parseInt(mode)) {
             case 1:
-                while (true) {
-                    System.out.print("Pleas enter the term to search for: ");
-                    String query = sc.nextLine();
-                    if (query.equals("quit")) {
-                        System.out.println("Exit the search.");
-                        break;
-                    } else if (query.contains(":stem")) {
-                        String[] spliter = query.split(" ");
-                        String stemToken = spliter[1];
-                        ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
-                        String processedToken = processor2.stem(stemToken);
-                        System.out.println(stemToken + "-->" + processedToken);
-                    } else if (query.equals(":vocab")) {
-                        for (int i = 0; i < 1000; i++) {
-                            System.out.println(index.getVocabulary().get(i));
-                        }
-                        System.out.println(index.getVocabulary().size());
-                    } else {
-                        System.out.println(index.getVocabulary());
 
-                        try {
-                            query = processQuery(query);
-                            System.out.println(query);
-                            BooleanQueryParser parser = new BooleanQueryParser();
-                            Query queryPosting = parser.parseQuery(query);
-                            if (query.contains("*")) {
-                                List<Posting> wildcardResult = new ArrayList<>(queryPosting.getPostings(index, kGramIndex));
-                                for (Posting p : wildcardResult) {
-                                    System.out.println("Document: " + corpus.getDocument(p.getDocumentId()).getFileTitle());
-
-                                }
-                                System.out.println(wildcardResult.size());
-                            } else {
-                                for (Posting p : queryPosting.getPostings(index)) {
-                                    System.out.println("Document: " + corpus.getDocument(p.getDocumentId()).getFileTitle());
-
-                                }
-                                System.out.println(queryPosting.getPostings(index).size());
-
-                            }
-                        } catch (Exception e) {
-                        }
-                    }
-                    System.out.println("Done");
-                }
 
 
             case 2:
                 while (true) {
                     HashMap<Integer, Float> topK;
+                    System.out.println("1. Default ");
+                    System.out.println("2. tf-idf ");
+                    System.out.println("3. Okapi BM25 ");
+                    System.out.println("4. Wacky ");
+                    System.out.print("Pleas enter the mode: ");
+                    String weight = sc.nextLine();
                     System.out.print("Pleas enter the term to search for: ");
                     String query = sc.nextLine();
                     if (query.equals("quit")) {
                         System.out.println("Exit the search.");
                         break;
                     } else {
-                        topK = score(query, dIndex, corpus.getCorpusSize());
+                        Strategy weightMode = WeightModeFactory.getMode(weight);
+                        topK = score(weightMode,query, dIndex, corpus.getCorpusSize());
+
                     }
                     for (Integer i : topK.keySet()) {
                         System.out.println(corpus.getDocument(i).getFileTitle());
@@ -129,38 +97,13 @@ public class IndexBuilder {
         return index;
     }
 
-    public static String processQuery(String query) throws IllegalAccessException, ClassNotFoundException, InstantiationException {
-        String[] str = query.split(" ");
-        StringBuilder newQuery = new StringBuilder();
-        for (String s : str) {
-            if (s.equals(str[str.length - 1])) {
-                if (s.contains("\"")) {
-                    s = s.substring(0, s.length() - 1);
-                    newQuery.append(getStem(s)).append("\"");
-                } else if (s.contains("*"))
-                    newQuery.append(s);
-                else
-                    newQuery.append(getStem(s));
-            } else if (s.contains("*"))
-                newQuery.append(s).append(" ");
-            else
-                newQuery.append(getStem(s)).append(" ");
-        }
-        return newQuery.toString();
 
-    }
-
-    public static String getStem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
-        ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
-        return processor2.stem(input);
-    }
-
-    private static HashMap<Integer, Float> score(String query, DiskPositionalIndex dIndex, Integer corpusSize) throws IOException {
+    private static HashMap<Integer, Float> score(Strategy weighMode, String query, DiskPositionalIndex dIndex, Integer corpusSize) throws IOException {
         HashMap<Integer, Float> accumulators = new HashMap<>();
         for (String s : query.split(" ")) {
             for (Posting p : dIndex.getPostings(s)) {
-                Float wqt = (float) Math.log(1 + corpusSize / dIndex.getPostings(s).size());
-                Float wdt = (float) (1 + Math.log(p.getPosition().size()));
+                Float wqt = weighMode.getWqt(corpusSize, dIndex.getPostings(s).size());
+                Float wdt = weighMode.getWdt(p.getPosition().size(),2,3,4);
                 Float newWeight;
                 if (accumulators.get(p.getDocumentId()) == null) {
                     accumulators.put(p.getDocumentId(), wdt * wqt);
@@ -171,10 +114,10 @@ public class IndexBuilder {
             }
         }
         for (Integer i : accumulators.keySet()) {
-            Float acc = (float) (accumulators.get(i) / dIndex.getWeight(i));
+            Float test = weighMode.getLd(dIndex.getWeight(i),5);
+            Float acc = (float) (accumulators.get(i) / weighMode.getLd(dIndex.getWeight(i), 5));
             accumulators.put(i, acc);
         }
-
         return findTopK(accumulators, 10);
     }
 
