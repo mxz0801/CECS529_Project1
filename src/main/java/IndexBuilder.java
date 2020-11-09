@@ -21,7 +21,8 @@ public class IndexBuilder {
 		ConcurrentMap map = writer.writeIndex(index, Paths.get(directory));
 		DiskPositionalIndex dIndex = new DiskPositionalIndex();
 		dIndex.loadMap(map);
-		dIndex.getPostings("1");
+		dIndex.docWeight();
+		System.out.println(dIndex.getPostings("me").size());
 
 	}
 
