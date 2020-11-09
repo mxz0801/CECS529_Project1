@@ -86,14 +86,14 @@ public class DiskPositionalIndex implements Index{
 
     }
 
-    public long getWeight(int docId) throws IOException {
-        long weight = 0;
+    public double getWeight(int docId) throws IOException {
+        double weight = 0;
         fileInputStream = new FileInputStream( "corpus/index/docWeights.bin");
         dataInputStream = new DataInputStream(fileInputStream);
         while(dataInputStream.available()>0){
-            int id = (int) dataInputStream.readLong();
+            int id = (int) dataInputStream.readDouble();
             if(id == docId){
-                return dataInputStream.readLong();
+                return dataInputStream.readDouble();
             }else{
                 dataInputStream.skipBytes(8);
             }
