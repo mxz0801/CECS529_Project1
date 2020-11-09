@@ -22,6 +22,7 @@ public interface Document {
 	 */
 	String getFileTitle();
 
+	GsonDoc getJson();
 
 
 

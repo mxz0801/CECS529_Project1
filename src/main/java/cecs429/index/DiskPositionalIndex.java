@@ -42,9 +42,9 @@ public class DiskPositionalIndex implements Index{
         storeWeight(weightMap);
     }
 
-    private List<Posting> seek(Integer index) throws IOException {
+    private ArrayList<Posting> seek(Integer index) throws IOException {
 
-        List<Posting> posting = new ArrayList<>();
+        ArrayList<Posting> posting = new ArrayList<>();
         fileInputStream = new FileInputStream( "corpus/index/postings.bin");
         dataInputStream = new DataInputStream(fileInputStream);
 
@@ -102,14 +102,20 @@ public class DiskPositionalIndex implements Index{
     }
 
     @Override
-    public List<Posting> getPostings(String term) throws IOException {
+    public ArrayList<Posting> getPostings(String term) {
         ArrayList<Posting> p = new ArrayList<>();
         if(!map.containsKey(term)){
             return p;
         }else{
             Integer index = (Integer) map.get(term);
             System.out.println(index);
-            return seek(index);
+            try {
+                p = seek(index);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return p;
+
         }
     }
 

@@ -46,6 +46,12 @@ public class TextFileDocument implements FileDocument {
 		return mFilePath.getFileName().toString();
 	}
 
+	@Override
+	public GsonDoc getJson() {
+		return null;
+	}
+
+
 	public static FileDocument loadTextFileDocument(Path absolutePath, int documentId) {
 		return new TextFileDocument(documentId, absolutePath);
 	}

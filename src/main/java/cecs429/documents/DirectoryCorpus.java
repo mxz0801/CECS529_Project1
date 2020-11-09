@@ -139,17 +139,18 @@ public class DirectoryCorpus implements DocumentCorpus {
 	 * Registers a factory method for loading documents of the given file extension. By default, a corpus
 	 * does not know how to load any files -- this method must be called prior to getDocuments().
 	 */
-	public void registerFileDocumentFactory(String fileExtension, FileDocumentFactory factory) {
+	public void registerFileDocumentFactory(String fileExtension, FileDocumentFactory factory,String fileExtension2, FileDocumentFactory factory2) {
 		mFactories.put(fileExtension, factory);
+		mFactories.put(fileExtension2, factory2);
 	}
 
 	/**
 	 * Constructs a corpus over a directory of simple json documents.
 	 * @param fileExtension The extension of the text documents to load, e.g., ".json".
 	 */
-	public static DirectoryCorpus loadDirectory(Path absolutePath, String fileExtension) {
+	public static DirectoryCorpus loadDirectory(Path absolutePath, String fileExtension, String fileExtension2) {
 		DirectoryCorpus corpus = new DirectoryCorpus(absolutePath);
-		corpus.registerFileDocumentFactory(fileExtension, TextFileDocument::loadTextFileDocument);
+		corpus.registerFileDocumentFactory(fileExtension, JsonFileDocument::loadJsonFileDocument,fileExtension2,TextFileDocument::loadTextFileDocument);
 		return corpus;
 	}
 
