@@ -10,9 +10,9 @@ public class DiskPositionalIndex implements Index{
 
     FileOutputStream fileOutputStream = null;
     DataOutputStream dataOutputStream = null;
-    Map<Integer, Long> weightMap = new HashMap<>();
-    long Ld;
-    long Wdt;
+    Map<Integer, Double> weightMap = new HashMap<>();
+    Double Ld;
+    Double Wdt;
 
     ConcurrentMap map;
 
@@ -30,7 +30,7 @@ public class DiskPositionalIndex implements Index{
             for(int i = 0; i<docCount; i++){
                 int docId = dataInputStream.readInt();
                 int termCount = dataInputStream.readInt();
-                Wdt = (long) (1+Math.log(termCount));
+                Wdt = (1+Math.log(termCount));
 
                 if(weightMap.containsKey(docId)){
                     Wdt += weightMap.get(docId);
@@ -70,15 +70,15 @@ public class DiskPositionalIndex implements Index{
         weightMap.forEach((k,v) ->{
             int docId = (int) k;
             System.out.println("aaa" + docId);
-            Wdt = (long) v;
-            Ld = (long) Math.sqrt(Math.pow(Wdt,2));
+            Wdt = (double) v;
+            Ld = Math.sqrt(Math.pow(Wdt,2));
             try {
-                dataOutputStream.writeLong(docId);
+                dataOutputStream.writeDouble(docId);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             try {
-                dataOutputStream.writeLong(Ld);
+                dataOutputStream.writeDouble(Ld);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -93,7 +93,6 @@ public class DiskPositionalIndex implements Index{
         while(dataInputStream.available()>0){
             int id = (int) dataInputStream.readDouble();
             if(id == docId){
-                Double i = dataInputStream.readDouble();
                 return dataInputStream.readDouble();
             }else{
                 dataInputStream.skipBytes(8);
@@ -109,7 +108,6 @@ public class DiskPositionalIndex implements Index{
             return p;
         }else{
             Integer index = (Integer) map.get(term);
-            System.out.println(index);
             try {
                 p = seek(index);
             } catch (IOException e) {

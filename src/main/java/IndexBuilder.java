@@ -9,7 +9,6 @@ import cecs429.index.*;
 import cecs429.query.BooleanQueryParser;
 import cecs429.query.Query;
 import cecs429.text.*;
-import cecs429.weight.Context;
 import cecs429.weight.Default;
 import cecs429.weight.Strategy;
 import cecs429.weight.WeightModeFactory;
@@ -40,16 +39,15 @@ public class IndexBuilder {
             case 1:
 
 
-
             case 2:
+                ArrayList<topKPosting> topK;
+                System.out.println("Pleas enter the mode: ");
+                System.out.println("1. Default ");
+                System.out.println("2. tf-idf ");
+                System.out.println("3. Okapi BM25 ");
+                System.out.println("4. Wacky ");
+                String weight = sc.nextLine();
                 while (true) {
-                    HashMap<Integer, Float> topK;
-                    System.out.println("1. Default ");
-                    System.out.println("2. tf-idf ");
-                    System.out.println("3. Okapi BM25 ");
-                    System.out.println("4. Wacky ");
-                    System.out.print("Pleas enter the mode: ");
-                    String weight = sc.nextLine();
                     System.out.print("Pleas enter the term to search for: ");
                     String query = sc.nextLine();
                     if (query.equals("quit")) {
@@ -57,20 +55,17 @@ public class IndexBuilder {
                         break;
                     } else {
                         Strategy weightMode = WeightModeFactory.getMode(weight);
-                        topK = score(weightMode,query, dIndex, corpus.getCorpusSize());
+                        topK = score(weightMode, query, dIndex, corpus.getCorpusSize(), 10);
 
                     }
-                    for (Integer i : topK.keySet()) {
-                        System.out.println(corpus.getDocument(i).getFileTitle());
-                        System.out.println(topK.get(i));
+                    for (topKPosting tp : topK) {
+                        System.out.print("Title: " + corpus.getDocument(tp.getDocumentId()).getFileTitle());
+                        System.out.println(" Score: " + tp.getScore());
                     }
                 }
                 break;
-
         }
-
     }
-
 
     private static Index indexCorpus(DocumentCorpus corpus, KgramIndex kgramIndex) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         Set<String> vocab = new HashSet<>();
@@ -98,12 +93,12 @@ public class IndexBuilder {
     }
 
 
-    private static HashMap<Integer, Float> score(Strategy weighMode, String query, DiskPositionalIndex dIndex, Integer corpusSize) throws IOException {
+    private static ArrayList<topKPosting> score(Strategy weighMode, String query, DiskPositionalIndex dIndex, Integer corpusSize, Integer k) throws IOException {
         HashMap<Integer, Float> accumulators = new HashMap<>();
         for (String s : query.split(" ")) {
             for (Posting p : dIndex.getPostings(s)) {
                 Float wqt = weighMode.getWqt(corpusSize, dIndex.getPostings(s).size());
-                Float wdt = weighMode.getWdt(p.getPosition().size(),2,3,4);
+                Float wdt = weighMode.getWdt(p.getPosition().size(), 2, 3, 4);
                 Float newWeight;
                 if (accumulators.get(p.getDocumentId()) == null) {
                     accumulators.put(p.getDocumentId(), wdt * wqt);
@@ -114,26 +109,25 @@ public class IndexBuilder {
             }
         }
         for (Integer i : accumulators.keySet()) {
-            Float test = weighMode.getLd(dIndex.getWeight(i),5);
+            Double ii = dIndex.getWeight(i);
             Float acc = (float) (accumulators.get(i) / weighMode.getLd(dIndex.getWeight(i), 5));
             accumulators.put(i, acc);
         }
-        return findTopK(accumulators, 10);
-    }
-
-    private static HashMap<Integer, Float> findTopK(HashMap<Integer, Float> acc, Integer k) {
-        PriorityQueue<Map.Entry<Integer, Float>> pq = new PriorityQueue<>(k);
-        HashMap<Integer, Float> results = null;
-        for (Map.Entry<Integer, Float> entry : acc.entrySet()) {
-            if (pq.size() < k)
-                pq.offer(entry);
-            else if (pq.peek().getValue() < entry.getValue()) {
-                pq.poll();
-                pq.offer(entry);
+        PriorityQueue<Map.Entry<Integer, Float>> pq = new PriorityQueue<>(k, new Comparator<Map.Entry<Integer, Float>>() {
+            @Override
+            public int compare(Map.Entry<Integer, Float> o1, Map.Entry<Integer, Float> o2) {
+                return o2.getValue().compareTo(o1.getValue());
             }
+        });
+        ArrayList<topKPosting> results = new ArrayList<>();
+        for (Map.Entry<Integer, Float> entry : accumulators.entrySet()) {
+            pq.offer(entry);
         }
-        while (!pq.isEmpty())
-            results.put(pq.poll().getKey(), pq.poll().getValue());
+        while (!pq.isEmpty()) {
+            topKPosting tp = new topKPosting(pq.peek().getKey(), pq.poll().getValue());
+            results.add(tp);
+        }
         return results;
     }
+
 }
