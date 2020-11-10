@@ -53,13 +53,16 @@ public class DiskPositionalIndex implements Index{
 
         dataInputStream.skipBytes(index);
         int docCount = dataInputStream.readInt();
+        int docId = 0;
         for(int i = 0; i<docCount; i++){
+            int pos = 0;
             ArrayList<Integer> position = new ArrayList<>();
-            int docId = dataInputStream.readInt();
+            docId += dataInputStream.readInt();
             int termCount = dataInputStream.readInt();
 
             for(int j = 0; j<termCount; j++){
-                position.add(dataInputStream.readInt());
+                pos += dataInputStream.readInt();
+                position.add(pos);
             }
             posting.add(new Posting(docId,position));
         }
@@ -106,18 +109,15 @@ public class DiskPositionalIndex implements Index{
     @Override
     public ArrayList<Posting> getPostings(String term) {
         ArrayList<Posting> p = new ArrayList<>();
-        if(!map.containsKey(term)){
-            return p;
-        }else{
+        if (map.containsKey(term)) {
             Integer index = (Integer) map.get(term);
             try {
                 p = seek(index);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return p;
-
         }
+        return p;
     }
 
     @Override

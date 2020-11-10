@@ -31,6 +31,7 @@ public class IndexBuilder {
         dIndex.loadMap(map);
         dIndex.docWeight();
 
+
         System.out.println("Select modes: ");
         System.out.println("1. Boolean query mode");
         System.out.println("2. Ranked query mode");
