@@ -4,13 +4,11 @@ import cecs429.index.Index;
 import cecs429.index.Posting;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-import org.mapdb.HTreeMap;
-import org.mapdb.Serializer;
+
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.concurrent.ConcurrentMap;
 
 public class DiskIndexWriter {

@@ -30,12 +30,15 @@ public class DiskPositionalIndex implements Index{
             for(int i = 0; i<docCount; i++){
                 int docId = dataInputStream.readInt();
                 int termCount = dataInputStream.readInt();
-                Wdt = (1+Math.log(termCount));
+                if(termCount!=0){
+                    Wdt = (1+Math.log(termCount));
+                    Wdt = Math.pow(Wdt,2);
 
-                if(weightMap.containsKey(docId)){
-                    Wdt += weightMap.get(docId);
+                    if(weightMap.containsKey(docId)){
+                        Wdt += weightMap.get(docId);
+                    }
+                    weightMap.put(docId,Wdt);
                 }
-                weightMap.put(docId,Wdt);
                 dataInputStream.skipBytes(4*termCount);
             }
         }
@@ -69,9 +72,8 @@ public class DiskPositionalIndex implements Index{
 
         weightMap.forEach((k,v) ->{
             int docId = (int) k;
-            System.out.println("aaa" + docId);
             Wdt = (double) v;
-            Ld = Math.sqrt(Math.pow(Wdt,2));
+            Ld = Math.sqrt(Wdt);
             try {
                 dataOutputStream.writeDouble(docId);
             } catch (IOException e) {
