@@ -4,6 +4,7 @@ import org.mapdb.BTreeMap;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 
 public class DiskPositionalIndex implements Index{
     FileInputStream fileInputStream = null;
@@ -15,10 +16,10 @@ public class DiskPositionalIndex implements Index{
     Double Ld;
     Double Wdt;
 
-    BTreeMap<String, Integer> map;
+    ConcurrentMap<String, Integer> map;
 
 
-    public void loadMap(BTreeMap<String, Integer> map) {
+    public void loadMap(ConcurrentMap<String, Integer> map) {
 
         this.map = map;
     }

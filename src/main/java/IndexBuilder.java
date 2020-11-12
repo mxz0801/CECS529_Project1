@@ -2,6 +2,7 @@ import java.io.*;
 
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 
 import cecs429.documents.*;
 import cecs429.index.*;
@@ -22,8 +23,12 @@ public class IndexBuilder {
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
         Scanner sc = new Scanner(System.in);
         DiskPositionalIndex dIndex = new DiskPositionalIndex();
-        BTreeMap<String, Integer> map = null;
-
+        DB db = DBMaker
+                .fileDB("file.db")
+                .fileMmapEnable()
+                .closeOnJvmShutdown()
+                .make();
+        ConcurrentMap<String, Integer> map= db.hashMap("mapsl", Serializer.STRING, Serializer.INTEGER).createOrOpen();;
         System.out.println("Please enter the directory of the file: ");
         String directory = sc.nextLine();
         DocumentCorpus corpus = DirectoryCorpus.loadDirectory(Paths.get(directory), ".json", ".txt"); ;
@@ -37,10 +42,18 @@ public class IndexBuilder {
                 KgramIndex kGramIndex = new KgramIndex();
                 Index index = indexCorpus(corpus, kGramIndex);
                 DiskIndexWriter writer = new DiskIndexWriter();
-                map = writer.writeIndex(index, Paths.get(directory));
+                map = writer.writeIndex(index,map,Paths.get(directory));
                 dIndex.docWeight();
+                db.close();
                 System.out.println("Done!");
             case 2:
+                db.close();
+                db = DBMaker
+                        .fileDB("file.db")
+                        .fileMmapEnable()
+                        .closeOnJvmShutdown()
+                        .make();
+                map= db.hashMap("mapsl", Serializer.STRING, Serializer.INTEGER).createOrOpen();;
                 corpus.getDocuments();
                 System.out.println("Select modes: ");
                 System.out.println("1. Boolean query mode");
@@ -64,6 +77,7 @@ public class IndexBuilder {
                             String query = sc.nextLine();
                             if (query.equals("quit")) {
                                 System.out.println("Exit the search.");
+                                db.close();
                                 break;
                             } else {
                                 Strategy weightMode = WeightModeFactory.getMode(weight);
