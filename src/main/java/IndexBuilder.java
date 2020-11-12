@@ -15,7 +15,7 @@ import cecs429.weight.WeightModeFactory;
 import cecs429.writer.DiskIndexWriter;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-
+//TESTING
 public class IndexBuilder {
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
         ConcurrentMap map;
