@@ -13,6 +13,7 @@ import cecs429.weight.Default;
 import cecs429.weight.Strategy;
 import cecs429.weight.WeightModeFactory;
 import cecs429.writer.DiskIndexWriter;
+import org.checkerframework.checker.units.qual.A;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -39,13 +40,13 @@ public class IndexBuilder {
         switch (Integer.parseInt(choice)) {
             case 1:
                 long startTime = System.currentTimeMillis();
-                int countTokens = 0;
+                ArrayList<weightPosting> wp = new ArrayList<>();
                 System.out.println("Timer started");
                 KgramIndex kGramIndex = new KgramIndex();
-                index = indexCorpus(corpus, kGramIndex,countTokens);
+                index = indexCorpus(corpus, kGramIndex, dIndex, wp);
                 DiskIndexWriter writer = new DiskIndexWriter();
                 map = writer.writeIndex(index,map,Paths.get(directory));
-                dIndex.docWeight(countTokens);
+                dIndex.docWeight(wp);
                 db.close();
                 System.out.println("Done!");
             case 2:
@@ -129,29 +130,37 @@ public class IndexBuilder {
 
     }
 
-    private static Index indexCorpus(DocumentCorpus corpus, KgramIndex kgramIndex, Integer countTokens) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
-        Set<String> vocab = new HashSet<>();
+    private static Index indexCorpus(DocumentCorpus corpus, KgramIndex kgramIndex,DiskPositionalIndex dIndex, ArrayList<weightPosting> wp) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
         PositionalInvertedIndex index = new PositionalInvertedIndex();
+        int totalTokens = 0;
         for (Document sDocument : corpus.getDocuments()) {
             TokenStream stream = new EnglishTokenStream(sDocument.getContent());
             Iterable<String> token = stream.getTokens();
+            int docTokens = 0, byteSize = 0, termCount=0, tfCount = 0;
             int position = 1;
             for (String t : token) {
-                countTokens++;
-                vocab.add(t.replaceAll("\\W", "").toLowerCase());
+                totalTokens++;
+                docTokens++;
+                t.replaceAll("\\W", "").toLowerCase();
+                byteSize += t.length();
                 List<String> word = processor.processToken(t);
                 if (word.size() > 0) {
-                    for (String s : word)
+                    for (String s : word) {
                         index.addTerm(s, sDocument.getId(), position);
+
+                    }
                     position++;
+                    tfCount++;
                 }
+                if(!index.hasTerm(t))
+                    termCount++;
             }
+            weightPosting w = new weightPosting(sDocument.getId(),docTokens, byteSize,((double)tfCount/termCount));
+            wp.add(w);
             stream.close();
         }
-        for (String s : vocab) {
-            kgramIndex.addTerm(s);
-        }
+        dIndex.storeDocLength(totalTokens/ corpus.getCorpusSize());
         return index;
     }
 
@@ -161,7 +170,10 @@ public class IndexBuilder {
         for (String s : query.split(" ")) {
             Float wqt = weighMode.getWqt(corpusSize, dIndex.getPostings(s,false).size());
             for (Posting p : dIndex.getPostings(s,false)) {
-                Float wdt = weighMode.getWdt(p.getPosition().get(0), 2, 3, 4);
+                Float wdt = weighMode.getWdt(p.getPosition().get(0),
+                        dIndex.getWeight(p.getDocumentId()).get(1),
+                        dIndex.getDocLength(),
+                        dIndex.getWeight(p.getDocumentId()).get(3));
                 if (!accumulators.containsKey(p.getDocumentId())) {
                     accumulators.put(p.getDocumentId(), wdt * wqt);
                 } else {
@@ -171,8 +183,7 @@ public class IndexBuilder {
             }
         }
         for (Integer i : accumulators.keySet()) {
-            Double ii = dIndex.getWeight(i);
-            Float acc = (float) (accumulators.get(i) / weighMode.getLd(dIndex.getWeight(i), 5));
+            Float acc = (float) (accumulators.get(i) / weighMode.getLd(dIndex.getWeight(i).get(0), dIndex.getWeight(i).get(2)));
             accumulators.put(i, acc);
         }
         PriorityQueue<Map.Entry<Integer, Float>> pq = new PriorityQueue<>(k, new Comparator<Map.Entry<Integer, Float>>() {

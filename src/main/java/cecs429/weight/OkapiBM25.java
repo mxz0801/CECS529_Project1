@@ -4,7 +4,7 @@ package cecs429.weight;
 public class OkapiBM25 implements Strategy{
 
     @Override
-    public Float getWdt(Integer tftd, Integer tokensInDoc, double aveTokensInCorpus, double aveTftd) {
+    public Float getWdt(Integer tftd, double tokensInDoc, double aveTokensInCorpus, double aveTftd) {
         return (float)((2.2*tftd)/(1.2*(0.25+0.75*tokensInDoc/aveTokensInCorpus)+tftd));
     }
 
@@ -14,7 +14,7 @@ public class OkapiBM25 implements Strategy{
     }
 
     @Override
-    public Float getLd(double docWeight, Integer byteSize) {
+    public Float getLd(double docWeight, double byteSize) {
         return (float)1;
     }
 

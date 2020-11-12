@@ -5,7 +5,7 @@ import cecs429.index.DiskPositionalIndex;
 public class TfIdf implements Strategy{
 
     @Override
-    public Float getWdt(Integer tftd, Integer tokensInDoc, double aveTokensInCorpus, double aveTftd) {
+    public Float getWdt(Integer tftd, double tokensInDoc, double aveTokensInCorpus, double aveTftd) {
         return (float)tftd;
     }
 
@@ -15,7 +15,7 @@ public class TfIdf implements Strategy{
     }
 
     @Override
-    public Float getLd(double docWeight, Integer byteSize) {
+    public Float getLd(double docWeight, double byteSize) {
         return (float)docWeight;
     }
 

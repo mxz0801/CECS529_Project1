@@ -24,7 +24,7 @@ public class DiskPositionalIndex implements Index{
         this.map = map;
     }
 
-    public void docWeight(int countTokens) throws IOException {
+    public void docWeight(ArrayList<weightPosting> wp) throws IOException {
         fileInputStream = new FileInputStream( "corpus/index/postings.bin");
         dataInputStream = new DataInputStream(fileInputStream);
         while(dataInputStream.available()>0){
@@ -44,7 +44,7 @@ public class DiskPositionalIndex implements Index{
                 dataInputStream.skipBytes(4*termCount);
             }
         }
-        storeWeight(weightMap,countTokens);
+        storeWeight(weightMap,wp);
     }
 
     private ArrayList<Posting> seek(Integer index, boolean checker) throws IOException {
@@ -76,7 +76,7 @@ public class DiskPositionalIndex implements Index{
         return posting;
     }
 
-    private void storeWeight(Map weightMap,int countTokens) throws IOException {
+    private void storeWeight(Map weightMap, ArrayList<weightPosting> wp) throws IOException {
         fileOutputStream = new FileOutputStream("corpus/index/docWeights.bin");
         dataOutputStream = new DataOutputStream(fileOutputStream);
 
@@ -87,32 +87,50 @@ public class DiskPositionalIndex implements Index{
             try {
                 dataOutputStream.writeDouble(docId);
                 dataOutputStream.writeDouble(Ld);
-                dataOutputStream.writeDouble(countTokens);
-                dataOutputStream.writeDouble(countTokens);
-                dataOutputStream.writeDouble(countTokens);
+                for(weightPosting p : wp){
+                    if(p.getDocumentID()==docId){
+                        dataOutputStream.writeDouble(p.getDocLengthD());
+                        dataOutputStream.writeDouble(p.getByteSize());
+                        dataOutputStream.writeDouble(p.getAveTfd());
+                        break;
+                    }
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
 
     }
+    public void storeDocLength(int totalTokens) throws IOException {
+        fileOutputStream = new FileOutputStream("corpus/index/docLength.bin");
+        dataOutputStream = new DataOutputStream(fileOutputStream);
+        dataOutputStream.writeDouble(totalTokens);
+    }
 
-    public double getWeight(int docId) throws IOException {
-        double weight = 0;
+    public List<Double> getWeight(int docId) throws IOException {
         List<Double> result = new ArrayList<>();
         fileInputStream = new FileInputStream( "corpus/index/docWeights.bin");
         dataInputStream = new DataInputStream(fileInputStream);
         while(dataInputStream.available()>0){
             int id = (int) dataInputStream.readDouble();
             if(id == docId){
-                for(int i=0;i<4;i++)
-                    result.add(dataInputStream.readDouble()); //ld
-                return dataInputStream.readDouble();
+                for(int i=0; i < 4; i++)
+                    result.add(dataInputStream.readDouble());
+                break;
             }else{
                 dataInputStream.skipBytes(32);
             }
         }
-        return weight;
+        return result;
+    }
+    public double getDocLength() throws IOException {
+        fileInputStream = new FileInputStream( "corpus/index/docLength.bin");
+        dataInputStream = new DataInputStream(fileInputStream);
+        double result = dataInputStream.readDouble();
+        dataInputStream.close();
+        fileInputStream.close();
+        return result;
     }
 
     @Override
