@@ -15,7 +15,7 @@ import cecs429.weight.WeightModeFactory;
 import cecs429.writer.DiskIndexWriter;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-
+//TESTING
 public class IndexBuilder {
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
         ConcurrentMap map;
@@ -39,6 +39,7 @@ public class IndexBuilder {
                 DiskIndexWriter writer = new DiskIndexWriter();
                 map = writer.writeIndex(index, db, Paths.get(directory));
             case 2:
+                corpus.getDocuments();
                 System.out.println("Select modes: ");
                 System.out.println("1. Boolean query mode");
                 System.out.println("2. Ranked query mode");
