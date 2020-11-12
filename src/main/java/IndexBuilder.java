@@ -23,6 +23,8 @@ public class IndexBuilder {
                 .closeOnJvmShutdown()
                 .make();
         Scanner sc = new Scanner(System.in);
+        DiskPositionalIndex dIndex = new DiskPositionalIndex();
+
         System.out.println("Please enter the directory of the file: ");
         String directory = sc.nextLine();
         DocumentCorpus corpus = DirectoryCorpus.loadDirectory(Paths.get(directory), ".json", ".txt"); ;
@@ -35,10 +37,13 @@ public class IndexBuilder {
                 System.out.println("Timer started");
                 KgramIndex kGramIndex = new KgramIndex();
                 Index index = indexCorpus(corpus, kGramIndex);
-                System.out.println("Done!");
                 DiskIndexWriter writer = new DiskIndexWriter();
-                map = writer.writeIndex(index, db, Paths.get(directory));
+                //map = writer.writeIndex(index, db, Paths.get(directory));
+                dIndex.loadMap(writer.writeIndex(index, db, Paths.get(directory)));
+                dIndex.docWeight();
+                System.out.println("Done!");
             case 2:
+                corpus.getDocuments();
                 System.out.println("Select modes: ");
                 System.out.println("1. Boolean query mode");
                 System.out.println("2. Ranked query mode");
@@ -50,9 +55,7 @@ public class IndexBuilder {
                     case 2:
                         ArrayList<topKPosting> topK;
                         map = db.hashMap("map").createOrOpen();
-                        DiskPositionalIndex dIndex = new DiskPositionalIndex();
                         dIndex.loadMap(map);
-                        dIndex.docWeight();
                         System.out.println("Pleas enter the mode: ");
                         System.out.println("1. Default ");
                         System.out.println("2. tf-idf ");
@@ -64,6 +67,7 @@ public class IndexBuilder {
                             String query = sc.nextLine();
                             if (query.equals("quit")) {
                                 System.out.println("Exit the search.");
+                                db.close();
                                 break;
                             } else {
                                 Strategy weightMode = WeightModeFactory.getMode(weight);
@@ -75,7 +79,6 @@ public class IndexBuilder {
                                 System.out.println(" Score: " + tp.getScore());
                             }
                         }
-                        db.close();
                         break;
                 }
         }

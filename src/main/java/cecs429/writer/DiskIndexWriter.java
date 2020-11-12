@@ -24,7 +24,7 @@ public class DiskIndexWriter {
         ConcurrentMap map = db.hashMap("map").createOrOpen();
 
         Integer currentPosition = 0;
-        fileOutputStream = new FileOutputStream(corpusAbsolutePath + "//index//postings.bin");
+        fileOutputStream = new FileOutputStream(corpusAbsolutePath + "/index/postings.bin");
         dataOutputStream = new DataOutputStream(fileOutputStream);
         for(String s : index.getVocabulary()){
             int lastDocId = 0;
