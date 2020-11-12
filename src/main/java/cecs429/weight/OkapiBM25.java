@@ -10,7 +10,7 @@ public class OkapiBM25 implements Strategy{
 
     @Override
     public Float getWqt(Integer corpusSize, Integer dft) {
-        return (float) Math.max(0.1, Math.log((corpusSize-dft+0.5) / (dft+0.5)));
+        return (float) Math.max(0.1, Math.log((corpusSize-dft+0.5) / (dft+0.5))/Math.log(Math.E));
     }
 
     @Override

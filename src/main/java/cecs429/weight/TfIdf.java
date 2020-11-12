@@ -11,7 +11,7 @@ public class TfIdf implements Strategy{
 
     @Override
     public Float getWqt(Integer corpusSize, Integer dft) {
-        return (float) Math.log(corpusSize / dft);
+        return (float) (Math.log(corpusSize / dft)/Math.log(Math.E));
     }
 
     @Override

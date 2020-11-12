@@ -126,9 +126,9 @@ public class IndexBuilder {
     private static ArrayList<topKPosting> score(Strategy weighMode, String query, DiskPositionalIndex dIndex, Integer corpusSize, Integer k) throws IOException {
         HashMap<Integer, Float> accumulators = new HashMap<>();
         for (String s : query.split(" ")) {
+            Float wqt = weighMode.getWqt(corpusSize, dIndex.getPostings(s,false).size());
             for (Posting p : dIndex.getPostings(s,false)) {
-                Float wqt = weighMode.getWqt(corpusSize, dIndex.getPostings(s,false).size());
-                Float wdt = weighMode.getWdt(p.getPosition().get(0), 2, 3, 4);
+                Float wdt = weighMode.getWdt(p.getPosition().size(), 2, 3, 4);
                 Float newWeight;
                 if (accumulators.get(p.getDocumentId()) == null) {
                     accumulators.put(p.getDocumentId(), wdt * wqt);
