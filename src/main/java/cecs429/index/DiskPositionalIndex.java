@@ -115,16 +115,26 @@ public class DiskPositionalIndex implements Index{
         List<Double> result = new ArrayList<>();
         fileInputStream = new FileInputStream( "corpus/index/docWeights.bin");
         dataInputStream = new DataInputStream(fileInputStream);
-        while(dataInputStream.available()>0){
-            int id = (int) dataInputStream.readDouble();
-            if(id == docId){
-                for(int i=0; i < 4; i++)
-                    result.add(dataInputStream.readDouble());
-                break;
-            }else{
-                dataInputStream.skipBytes(32);
-            }
-        }
+
+        int jump = (docId-1)*40;
+        dataInputStream.skipBytes(jump);
+        int id = (int) dataInputStream.readDouble();
+
+            for(int i=0; i < 4; i++)
+                result.add(dataInputStream.readDouble());
+
+
+
+//        while(dataInputStream.available()>0){
+//            int id = (int) dataInputStream.readDouble();
+//            if(id == docId){
+//                for(int i=0; i < 4; i++)
+//                    result.add(dataInputStream.readDouble());
+//                break;
+//            }else{
+//                dataInputStream.skipBytes(32);
+//            }
+//        }
         dataInputStream.close();
         return result;
     }
