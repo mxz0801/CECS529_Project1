@@ -53,6 +53,12 @@ public class KgramIndex implements Index{
     public List<Posting> getPostings(String term){
         return  null;
     }
+
+    @Override
+    public List<Posting> getPostings(String term, boolean check) {
+        return null;
+    }
+
     @Override
     public List<String> getVocabulary() {
         Collections.sort(mVocabulary);

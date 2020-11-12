@@ -37,6 +37,11 @@ public class PositionalInvertedIndex implements Index {
 			return mIndex.get(term);
 	}
 
+	@Override
+	public List<Posting> getPostings(String term, boolean check) {
+		return null;
+	}
+
 	public List<String> getVocabulary() {
 		Collections.sort(mVocabulary);
 		return mVocabulary;

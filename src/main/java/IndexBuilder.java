@@ -2,7 +2,6 @@ import java.io.*;
 
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 
 import cecs429.documents.*;
 import cecs429.index.*;
@@ -13,17 +12,17 @@ import cecs429.weight.Default;
 import cecs429.weight.Strategy;
 import cecs429.weight.WeightModeFactory;
 import cecs429.writer.DiskIndexWriter;
+import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
+import org.mapdb.Serializer;
+
 //TESTING
 public class IndexBuilder {
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
-        ConcurrentMap map;
-        DB db = DBMaker.fileDB("file.db")
-                .closeOnJvmShutdown()
-                .make();
         Scanner sc = new Scanner(System.in);
         DiskPositionalIndex dIndex = new DiskPositionalIndex();
+        BTreeMap<String, Integer> map = null;
 
         System.out.println("Please enter the directory of the file: ");
         String directory = sc.nextLine();
@@ -38,8 +37,7 @@ public class IndexBuilder {
                 KgramIndex kGramIndex = new KgramIndex();
                 Index index = indexCorpus(corpus, kGramIndex);
                 DiskIndexWriter writer = new DiskIndexWriter();
-                //map = writer.writeIndex(index, db, Paths.get(directory));
-                dIndex.loadMap(writer.writeIndex(index, db, Paths.get(directory)));
+                map = writer.writeIndex(index, Paths.get(directory));
                 dIndex.docWeight();
                 System.out.println("Done!");
             case 2:
@@ -54,7 +52,6 @@ public class IndexBuilder {
 
                     case 2:
                         ArrayList<topKPosting> topK;
-                        map = db.hashMap("map").createOrOpen();
                         dIndex.loadMap(map);
                         System.out.println("Pleas enter the mode: ");
                         System.out.println("1. Default ");
@@ -67,7 +64,6 @@ public class IndexBuilder {
                             String query = sc.nextLine();
                             if (query.equals("quit")) {
                                 System.out.println("Exit the search.");
-                                db.close();
                                 break;
                             } else {
                                 Strategy weightMode = WeightModeFactory.getMode(weight);
@@ -116,9 +112,9 @@ public class IndexBuilder {
     private static ArrayList<topKPosting> score(Strategy weighMode, String query, DiskPositionalIndex dIndex, Integer corpusSize, Integer k) throws IOException {
         HashMap<Integer, Float> accumulators = new HashMap<>();
         for (String s : query.split(" ")) {
-            for (Posting p : dIndex.getPostings(s)) {
-                Float wqt = weighMode.getWqt(corpusSize, dIndex.getPostings(s).size());
-                Float wdt = weighMode.getWdt(p.getPosition().size(), 2, 3, 4);
+            for (Posting p : dIndex.getPostings(s,false)) {
+                Float wqt = weighMode.getWqt(corpusSize, dIndex.getPostings(s,false).size());
+                Float wdt = weighMode.getWdt(p.getPosition().get(0), 2, 3, 4);
                 Float newWeight;
                 if (accumulators.get(p.getDocumentId()) == null) {
                     accumulators.put(p.getDocumentId(), wdt * wqt);
@@ -143,9 +139,11 @@ public class IndexBuilder {
         for (Map.Entry<Integer, Float> entry : accumulators.entrySet()) {
             pq.offer(entry);
         }
-        while (!pq.isEmpty()) {
+        int count =0;
+        while (!pq.isEmpty() && count <k) {
             topKPosting tp = new topKPosting(pq.peek().getKey(), pq.poll().getValue());
             results.add(tp);
+            count++;
         }
         return results;
     }

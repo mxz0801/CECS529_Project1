@@ -1,8 +1,9 @@
 package cecs429.index;
 
+import org.mapdb.BTreeMap;
+
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 
 public class DiskPositionalIndex implements Index{
     FileInputStream fileInputStream = null;
@@ -14,10 +15,10 @@ public class DiskPositionalIndex implements Index{
     Double Ld;
     Double Wdt;
 
-    ConcurrentMap map;
+    BTreeMap<String, Integer> map;
 
 
-    public void loadMap(ConcurrentMap map) {
+    public void loadMap(BTreeMap<String, Integer> map) {
 
         this.map = map;
     }
@@ -45,7 +46,7 @@ public class DiskPositionalIndex implements Index{
         storeWeight(weightMap);
     }
 
-    private ArrayList<Posting> seek(Integer index) throws IOException {
+    private ArrayList<Posting> seek(Integer index, boolean checker) throws IOException {
 
         ArrayList<Posting> posting = new ArrayList<>();
         fileInputStream = new FileInputStream( "corpus/index/postings.bin");
@@ -59,12 +60,16 @@ public class DiskPositionalIndex implements Index{
             ArrayList<Integer> position = new ArrayList<>();
             docId += dataInputStream.readInt();
             int termCount = dataInputStream.readInt();
-
-            for(int j = 0; j<termCount; j++){
-                pos += dataInputStream.readInt();
-                position.add(pos);
+            if(checker){
+                for(int j = 0; j<termCount; j++){
+                    pos += dataInputStream.readInt();
+                    position.add(pos);
+                }
+            }else{
+                position.add(termCount);
             }
             posting.add(new Posting(docId,position));
+
         }
         return posting;
     }
@@ -78,6 +83,7 @@ public class DiskPositionalIndex implements Index{
             Wdt = (double) v;
             Ld = Math.sqrt(Wdt);
             try {
+
                 dataOutputStream.writeDouble(docId);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -110,9 +116,23 @@ public class DiskPositionalIndex implements Index{
     public ArrayList<Posting> getPostings(String term) {
         ArrayList<Posting> p = new ArrayList<>();
         if (map.containsKey(term)) {
-            Integer index = (Integer) map.get(term);
+            Integer index =  map.get(term);
             try {
-                p = seek(index);
+                p = seek(index,true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return p;
+    }
+
+    @Override
+    public List<Posting> getPostings(String term, boolean check) {
+        ArrayList<Posting> p = new ArrayList<>();
+        if (map.containsKey(term)) {
+            Integer index =  map.get(term);
+            try {
+                p = seek(index,check);
             } catch (IOException e) {
                 e.printStackTrace();
             }

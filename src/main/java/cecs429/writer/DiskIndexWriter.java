@@ -2,26 +2,27 @@ package cecs429.writer;
 
 import cecs429.index.Index;
 import cecs429.index.Posting;
+import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
+import org.mapdb.Serializer;
 
 
 import java.io.*;
 import java.nio.file.Path;
 
-import java.util.concurrent.ConcurrentMap;
 
 public class DiskIndexWriter {
     FileOutputStream fileOutputStream = null;
     DataOutputStream dataOutputStream = null;
 
-    public ConcurrentMap writeIndex(Index index,DB db, Path corpusAbsolutePath) throws IOException {
-//        DB db = DBMaker.fileDB("file.db")
-//                .transactionEnable()
-//                .closeOnJvmShutdown()
-//                .make();
+    public BTreeMap writeIndex(Index index, Path corpusAbsolutePath) throws IOException {
+        DB db = DBMaker.fileDB("file.db")
+                .transactionEnable()
+                .closeOnJvmShutdown()
+                .make();
 
-        ConcurrentMap map = db.hashMap("map").createOrOpen();
+        BTreeMap<String, Integer> map = db.treeMap("map").keySerializer(Serializer.STRING).valueSerializer(Serializer.INTEGER).createOrOpen();
 
         Integer currentPosition = 0;
         fileOutputStream = new FileOutputStream(corpusAbsolutePath + "/index/postings.bin");
@@ -48,6 +49,7 @@ public class DiskIndexWriter {
 
         }
         dataOutputStream.close();
+        db.close();
         return map;
     }
 }
