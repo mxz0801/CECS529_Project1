@@ -13,59 +13,78 @@ import cecs429.weight.Default;
 import cecs429.weight.Strategy;
 import cecs429.weight.WeightModeFactory;
 import cecs429.writer.DiskIndexWriter;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
 
 public class IndexBuilder {
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
-        System.out.println("Please enter the directory of the file: ");
+        ConcurrentMap map;
+        DB db = DBMaker.fileDB("file.db")
+                .closeOnJvmShutdown()
+                .make();
         Scanner sc = new Scanner(System.in);
+        System.out.println("Please enter the directory of the file: ");
         String directory = sc.nextLine();
-        long startTime = System.currentTimeMillis();
-        System.out.println("Timer started");
-        DocumentCorpus corpus = DirectoryCorpus.loadDirectory(Paths.get(directory), ".json", ".txt");   //read json file
-        KgramIndex kGramIndex = new KgramIndex();
-        Index index = indexCorpus(corpus, kGramIndex);
-        System.out.println("Done!");
-        DiskIndexWriter writer = new DiskIndexWriter();
-        ConcurrentMap map = writer.writeIndex(index, Paths.get(directory));
-        DiskPositionalIndex dIndex = new DiskPositionalIndex();
-        dIndex.loadMap(map);
-        dIndex.docWeight();
+        DocumentCorpus corpus = DirectoryCorpus.loadDirectory(Paths.get(directory), ".json", ".txt"); ;
+        System.out.println("1. Build index: ");
+        System.out.println("2. Query index: ");
 
-
-        System.out.println("Select modes: ");
-        System.out.println("1. Boolean query mode");
-        System.out.println("2. Ranked query mode");
-        String mode = sc.nextLine();
-        switch (Integer.parseInt(mode)) {
+        String choice = sc.nextLine();
+        switch (Integer.parseInt(choice)) {
             case 1:
-
-
+                long startTime = System.currentTimeMillis();
+                System.out.println("Timer started");
+                KgramIndex kGramIndex = new KgramIndex();
+                Index index = indexCorpus(corpus, kGramIndex);
+                System.out.println("Done!");
+                DiskIndexWriter writer = new DiskIndexWriter();
+                map = writer.writeIndex(index,db, Paths.get(directory));
             case 2:
-                ArrayList<topKPosting> topK;
-                System.out.println("Pleas enter the mode: ");
-                System.out.println("1. Default ");
-                System.out.println("2. tf-idf ");
-                System.out.println("3. Okapi BM25 ");
-                System.out.println("4. Wacky ");
-                String weight = sc.nextLine();
-                while (true) {
-                    System.out.print("Pleas enter the term to search for: ");
-                    String query = sc.nextLine();
-                    if (query.equals("quit")) {
-                        System.out.println("Exit the search.");
-                        break;
-                    } else {
-                        Strategy weightMode = WeightModeFactory.getMode(weight);
-                        topK = score(weightMode, query, dIndex, corpus.getCorpusSize(), 10);
+                System.out.println("Select modes: ");
+                System.out.println("1. Boolean query mode");
+                System.out.println("2. Ranked query mode");
+                String mode = sc.nextLine();
+                switch (Integer.parseInt(mode)) {
+                    case 1:
 
-                    }
-                    for (topKPosting tp : topK) {
-                        System.out.print("Title: " + corpus.getDocument(tp.getDocumentId()).getFileTitle());
-                        System.out.println(" Score: " + tp.getScore());
-                    }
+
+                    case 2:
+                        ArrayList<topKPosting> topK;
+                        map = db.hashMap("map").createOrOpen();
+                        DiskPositionalIndex dIndex = new DiskPositionalIndex();
+                        dIndex.loadMap(map);
+                        dIndex.docWeight();
+                        System.out.println("Pleas enter the mode: ");
+                        System.out.println("1. Default ");
+                        System.out.println("2. tf-idf ");
+                        System.out.println("3. Okapi BM25 s");
+                        System.out.println("4. Wacky ");
+                        String weight = sc.nextLine();
+                        while (true) {
+                            System.out.print("Pleas enter the term to search for: ");
+                            String query = sc.nextLine();
+                            if (query.equals("quit")) {
+                                System.out.println("Exit the search.");
+                                db.close();
+                                break;
+                            } else {
+                                Strategy weightMode = WeightModeFactory.getMode(weight);
+                                topK = score(weightMode, query, dIndex, corpus.getCorpusSize(), 10);
+
+                            }
+                            for (topKPosting tp : topK) {
+                                System.out.print("Title: " + corpus.getDocument(tp.getDocumentId()).getFileTitle());
+                                System.out.println(" Score: " + tp.getScore());
+                            }
+                        }
+                        db.close();
+                        break;
                 }
-                break;
         }
+
+
+
+
     }
 
     private static Index indexCorpus(DocumentCorpus corpus, KgramIndex kgramIndex) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {

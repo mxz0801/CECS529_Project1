@@ -15,11 +15,11 @@ public class DiskIndexWriter {
     FileOutputStream fileOutputStream = null;
     DataOutputStream dataOutputStream = null;
 
-    public ConcurrentMap writeIndex(Index index, Path corpusAbsolutePath) throws IOException {
-        DB db = DBMaker.fileDB("file.db")
-                .transactionEnable()
-                .closeOnJvmShutdown()
-                .make();
+    public ConcurrentMap writeIndex(Index index,DB db, Path corpusAbsolutePath) throws IOException {
+//        DB db = DBMaker.fileDB("file.db")
+//                .transactionEnable()
+//                .closeOnJvmShutdown()
+//                .make();
 
         ConcurrentMap map = db.hashMap("map").createOrOpen();
 
@@ -48,9 +48,6 @@ public class DiskIndexWriter {
 
         }
         dataOutputStream.close();
-
-        db.close();
-
         return map;
     }
 }
