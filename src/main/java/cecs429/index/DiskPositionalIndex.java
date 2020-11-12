@@ -16,10 +16,10 @@ public class DiskPositionalIndex implements Index{
     Double Ld;
     Double Wdt;
 
-    ConcurrentMap<String, Integer> map;
+    BTreeMap<String, Integer> map;
 
 
-    public void loadMap(ConcurrentMap<String, Integer> map) {
+    public void loadMap(BTreeMap<String, Integer> map) {
 
         this.map = map;
     }
@@ -44,6 +44,7 @@ public class DiskPositionalIndex implements Index{
                 dataInputStream.skipBytes(4*termCount);
             }
         }
+        dataInputStream.close();
         storeWeight(weightMap,wp);
     }
 
@@ -73,6 +74,7 @@ public class DiskPositionalIndex implements Index{
             posting.add(new Posting(docId,position));
 
         }
+        dataInputStream.close();
         return posting;
     }
 
@@ -95,17 +97,18 @@ public class DiskPositionalIndex implements Index{
                         break;
                     }
                 }
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
+        dataOutputStream.close();
 
     }
     public void storeDocLength(int totalTokens) throws IOException {
         fileOutputStream = new FileOutputStream("corpus/index/docLength.bin");
         dataOutputStream = new DataOutputStream(fileOutputStream);
         dataOutputStream.writeDouble(totalTokens);
+        dataOutputStream.close();
     }
 
     public List<Double> getWeight(int docId) throws IOException {
@@ -122,6 +125,7 @@ public class DiskPositionalIndex implements Index{
                 dataInputStream.skipBytes(32);
             }
         }
+        dataInputStream.close();
         return result;
     }
     public double getDocLength() throws IOException {

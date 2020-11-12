@@ -30,7 +30,7 @@ public class IndexBuilder {
                 .fileMmapEnable()
                 .closeOnJvmShutdown()
                 .make();
-        ConcurrentMap<String, Integer> map= db.hashMap("mapsl", Serializer.STRING, Serializer.INTEGER).createOrOpen();;
+        BTreeMap<String, Integer> map= db.treeMap("mapsl", Serializer.STRING, Serializer.INTEGER).createOrOpen();;
         System.out.println("Please enter the directory of the file: ");
         String directory = sc.nextLine();
         DocumentCorpus corpus = DirectoryCorpus.loadDirectory(Paths.get(directory), ".json", ".txt"); ;
@@ -56,8 +56,7 @@ public class IndexBuilder {
                         .fileMmapEnable()
                         .closeOnJvmShutdown()
                         .make();
-                map= db.hashMap("mapsl", Serializer.STRING, Serializer.INTEGER).createOrOpen();;
-                corpus.getDocuments();
+                map= db.treeMap("mapsl", Serializer.STRING, Serializer.INTEGER).createOrOpen();;
                 System.out.println("Select modes: ");
                 System.out.println("1. Boolean query mode");
                 System.out.println("2. Ranked query mode");
@@ -118,6 +117,7 @@ public class IndexBuilder {
 
                             }
                             for (topKPosting tp : topK) {
+                                corpus.getDocument(tp.getDocumentId()).getContent();
                                 System.out.print("Title: " + corpus.getDocument(tp.getDocumentId()).getFileTitle());
                                 System.out.println(" Score: " + tp.getScore());
                             }
@@ -166,16 +166,22 @@ public class IndexBuilder {
 
 
     private static ArrayList<topKPosting> score(Strategy weighMode, String query, DiskPositionalIndex dIndex, Integer corpusSize, Integer k) throws IOException {
-        HashMap<Integer, Float> accumulators = new HashMap<>();
+        Map<Integer, Float> accumulators = new HashMap<>();
         for (String s : query.split(" ")) {
-            Float wqt = weighMode.getWqt(corpusSize, dIndex.getPostings(s,false).size());
-            for (Posting p : dIndex.getPostings(s,false)) {
+            List<Posting> temp = dIndex.getPostings(s,false);
+            Float wqt = weighMode.getWqt(corpusSize, temp.size());
+            //System.out.println("doing wqt");
+            for (Posting p : temp) {
                 Float wdt = weighMode.getWdt(p.getPosition().get(0),
                         dIndex.getWeight(p.getDocumentId()).get(1),
                         dIndex.getDocLength(),
                         dIndex.getWeight(p.getDocumentId()).get(3));
+                //System.out.println("doing WDT");
+
                 if (!accumulators.containsKey(p.getDocumentId())) {
                     accumulators.put(p.getDocumentId(), wdt * wqt);
+                    //System.out.println("PUTTING");
+
                 } else {
                     Float newWeight = accumulators.get(p.getDocumentId()) + wdt * wqt;
                     accumulators.put(p.getDocumentId(), newWeight);

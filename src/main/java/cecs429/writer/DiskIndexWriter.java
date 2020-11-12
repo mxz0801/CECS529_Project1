@@ -17,7 +17,7 @@ public class DiskIndexWriter {
     FileOutputStream fileOutputStream = null;
     DataOutputStream dataOutputStream = null;
 
-    public ConcurrentMap writeIndex(Index index, ConcurrentMap<String, Integer> map, Path corpusAbsolutePath) throws IOException {
+    public BTreeMap writeIndex(Index index, BTreeMap<String, Integer> map, Path corpusAbsolutePath) throws IOException {
 //        DB db = DBMaker.fileDB("file.db")
 //                .transactionEnable()
 //                .closeOnJvmShutdown()
