@@ -68,6 +68,7 @@ public class DiskPositionalIndex implements Index{
                 }
             }else{
                 position.add(termCount);
+                dataInputStream.skipBytes(4*termCount);
             }
             posting.add(new Posting(docId,position));
 

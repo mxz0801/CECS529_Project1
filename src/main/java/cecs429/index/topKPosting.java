@@ -4,8 +4,8 @@ public class topKPosting {
     private int mDocumentId;
     private Float mScore;
     public topKPosting(int documentId, Float score) {
-        mDocumentId = documentId;
-        mScore = score;
+        this.mDocumentId = documentId;
+        this.mScore = score;
     }
 
     public int getDocumentId() {

@@ -85,7 +85,7 @@ public class IndexBuilder {
 
                             }
                             for (topKPosting tp : topK) {
-                                System.out.print("Title: " + corpus.getDocument(tp.getDocumentId()).getFileTitle());
+                                System.out.print("Title: " + corpus.getDocument(tp.getDocumentId()));
                                 System.out.println(" Score: " + tp.getScore());
                             }
                         }
@@ -126,14 +126,13 @@ public class IndexBuilder {
     private static ArrayList<topKPosting> score(Strategy weighMode, String query, DiskPositionalIndex dIndex, Integer corpusSize, Integer k) throws IOException {
         HashMap<Integer, Float> accumulators = new HashMap<>();
         for (String s : query.split(" ")) {
+            Float wqt = weighMode.getWqt(corpusSize, dIndex.getPostings(s,false).size());
             for (Posting p : dIndex.getPostings(s,false)) {
-                Float wqt = weighMode.getWqt(corpusSize, dIndex.getPostings(s,false).size());
                 Float wdt = weighMode.getWdt(p.getPosition().get(0), 2, 3, 4);
-                Float newWeight;
                 if (accumulators.get(p.getDocumentId()) == null) {
                     accumulators.put(p.getDocumentId(), wdt * wqt);
                 } else {
-                    newWeight = accumulators.get(p.getDocumentId()) + wdt * wqt;
+                    Float newWeight = accumulators.get(p.getDocumentId()) + wdt * wqt;
                     accumulators.put(p.getDocumentId(), newWeight);
                 }
             }
@@ -153,7 +152,7 @@ public class IndexBuilder {
         for (Map.Entry<Integer, Float> entry : accumulators.entrySet()) {
             pq.offer(entry);
         }
-        int count =0;
+        int count = 0;
         while (!pq.isEmpty() && count <k) {
             topKPosting tp = new topKPosting(pq.peek().getKey(), pq.poll().getValue());
             results.add(tp);
