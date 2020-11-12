@@ -18,10 +18,11 @@ import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 
-//TESTING
+
 public class IndexBuilder {
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
         Scanner sc = new Scanner(System.in);
+        Index index = null;
         DiskPositionalIndex dIndex = new DiskPositionalIndex();
         DB db = DBMaker
                 .fileDB("file.db")
@@ -32,18 +33,19 @@ public class IndexBuilder {
         System.out.println("Please enter the directory of the file: ");
         String directory = sc.nextLine();
         DocumentCorpus corpus = DirectoryCorpus.loadDirectory(Paths.get(directory), ".json", ".txt"); ;
-        System.out.println("1. Build index: ");
-        System.out.println("2. Query index: ");
+        System.out.println("1. Build index ");
+        System.out.println("2. Query index ");
         String choice = sc.nextLine();
         switch (Integer.parseInt(choice)) {
             case 1:
                 long startTime = System.currentTimeMillis();
+                int countTokens = 0;
                 System.out.println("Timer started");
                 KgramIndex kGramIndex = new KgramIndex();
-                Index index = indexCorpus(corpus, kGramIndex);
+                index = indexCorpus(corpus, kGramIndex,countTokens);
                 DiskIndexWriter writer = new DiskIndexWriter();
                 map = writer.writeIndex(index,map,Paths.get(directory));
-                dIndex.docWeight();
+                dIndex.docWeight(countTokens);
                 db.close();
                 System.out.println("Done!");
             case 2:
@@ -59,13 +61,43 @@ public class IndexBuilder {
                 System.out.println("1. Boolean query mode");
                 System.out.println("2. Ranked query mode");
                 String mode = sc.nextLine();
+                dIndex.loadMap(map);
                 switch (Integer.parseInt(mode)) {
                     case 1:
-
+                        while (true) {
+                            System.out.print("Pleas enter the term to search for: ");
+                            String query = sc.nextLine();
+                            if (query.equals("quit")) {
+                                System.out.println("Exit the search.");
+                                break;
+                            } else if (query.contains(":stem")) {
+                                String[] spliter = query.split(" ");
+                                String stemToken = spliter[1];
+                                ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
+                                String processedToken = processor2.stem(stemToken);
+                                System.out.println(stemToken + "-->" + processedToken);
+                            } else if (query.equals(":vocab")) {
+                                for (int i = 0; i < 1000; i++) {
+                                    System.out.println(dIndex.getVocabulary().get(i));
+                                }
+                                System.out.println(dIndex.getVocabulary().size());
+                            } else {
+                                try {
+                                    query = processQuery(query);
+                                    System.out.println(query);
+                                    BooleanQueryParser parser = new BooleanQueryParser();
+                                    Query queryPosting = parser.parseQuery(query);
+                                    for (Posting p : queryPosting.getPostings(index)) {
+                                        System.out.println("Document: " + corpus.getDocument(p.getDocumentId()).getFileTitle());
+                                    }
+                                    System.out.println(queryPosting.getPostings(index).size());
+                                } catch (Exception e) {
+                                }
+                            }
+                        }
 
                     case 2:
                         ArrayList<topKPosting> topK;
-                        dIndex.loadMap(map);
                         System.out.println("Pleas enter the mode: ");
                         System.out.println("1. Default ");
                         System.out.println("2. tf-idf ");
@@ -97,7 +129,7 @@ public class IndexBuilder {
 
     }
 
-    private static Index indexCorpus(DocumentCorpus corpus, KgramIndex kgramIndex) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+    private static Index indexCorpus(DocumentCorpus corpus, KgramIndex kgramIndex, Integer countTokens) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         Set<String> vocab = new HashSet<>();
         ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
         PositionalInvertedIndex index = new PositionalInvertedIndex();
@@ -106,6 +138,7 @@ public class IndexBuilder {
             Iterable<String> token = stream.getTokens();
             int position = 1;
             for (String t : token) {
+                countTokens++;
                 vocab.add(t.replaceAll("\\W", "").toLowerCase());
                 List<String> word = processor.processToken(t);
                 if (word.size() > 0) {
@@ -129,7 +162,7 @@ public class IndexBuilder {
             Float wqt = weighMode.getWqt(corpusSize, dIndex.getPostings(s,false).size());
             for (Posting p : dIndex.getPostings(s,false)) {
                 Float wdt = weighMode.getWdt(p.getPosition().get(0), 2, 3, 4);
-                if (accumulators.get(p.getDocumentId()) == null) {
+                if (!accumulators.containsKey(p.getDocumentId())) {
                     accumulators.put(p.getDocumentId(), wdt * wqt);
                 } else {
                     Float newWeight = accumulators.get(p.getDocumentId()) + wdt * wqt;
@@ -159,6 +192,33 @@ public class IndexBuilder {
             count++;
         }
         return results;
+    }
+    public static String processQuery(String query) throws IllegalAccessException, ClassNotFoundException, InstantiationException {
+        String[] str = query.split(" ");
+        StringBuilder newQuery = new StringBuilder();
+        for(String s : str){
+            if(s.equals(str[str.length-1])) {
+                if(s.contains("\"")){
+                    s = s.substring(0, s.length() -1);
+                    newQuery.append(getStem(s)).append("\"");
+                }
+                else if(s.contains("*"))
+                    newQuery.append(s);
+                else
+                    newQuery.append(getStem(s));
+            }
+            else if(s.contains("*"))
+                newQuery.append(s).append(" ");
+            else
+                newQuery.append(getStem(s)).append(" ");
+        }
+
+        return newQuery.toString();
+
+    }
+    public static String getStem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+        ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
+        return processor2.stem(input);
     }
 
 }

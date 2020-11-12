@@ -24,7 +24,7 @@ public class DiskPositionalIndex implements Index{
         this.map = map;
     }
 
-    public void docWeight() throws IOException {
+    public void docWeight(int countTokens) throws IOException {
         fileInputStream = new FileInputStream( "corpus/index/postings.bin");
         dataInputStream = new DataInputStream(fileInputStream);
         while(dataInputStream.available()>0){
@@ -44,7 +44,7 @@ public class DiskPositionalIndex implements Index{
                 dataInputStream.skipBytes(4*termCount);
             }
         }
-        storeWeight(weightMap);
+        storeWeight(weightMap,countTokens);
     }
 
     private ArrayList<Posting> seek(Integer index, boolean checker) throws IOException {
@@ -76,7 +76,7 @@ public class DiskPositionalIndex implements Index{
         return posting;
     }
 
-    private void storeWeight(Map weightMap) throws IOException {
+    private void storeWeight(Map weightMap,int countTokens) throws IOException {
         fileOutputStream = new FileOutputStream("corpus/index/docWeights.bin");
         dataOutputStream = new DataOutputStream(fileOutputStream);
 
@@ -85,13 +85,11 @@ public class DiskPositionalIndex implements Index{
             Wdt = (double) v;
             Ld = Math.sqrt(Wdt);
             try {
-
                 dataOutputStream.writeDouble(docId);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
                 dataOutputStream.writeDouble(Ld);
+                dataOutputStream.writeDouble(countTokens);
+                dataOutputStream.writeDouble(countTokens);
+                dataOutputStream.writeDouble(countTokens);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -101,14 +99,17 @@ public class DiskPositionalIndex implements Index{
 
     public double getWeight(int docId) throws IOException {
         double weight = 0;
+        List<Double> result = new ArrayList<>();
         fileInputStream = new FileInputStream( "corpus/index/docWeights.bin");
         dataInputStream = new DataInputStream(fileInputStream);
         while(dataInputStream.available()>0){
             int id = (int) dataInputStream.readDouble();
             if(id == docId){
+                for(int i=0;i<4;i++)
+                    result.add(dataInputStream.readDouble()); //ld
                 return dataInputStream.readDouble();
             }else{
-                dataInputStream.skipBytes(8);
+                dataInputStream.skipBytes(32);
             }
         }
         return weight;
@@ -144,8 +145,10 @@ public class DiskPositionalIndex implements Index{
 
     @Override
     public List<String> getVocabulary() {
-
-    return null;
+        List<String> vocab = new ArrayList<>();
+        map.forEach((k,v) ->{
+            vocab.add(k);
+        });
+        return vocab;
     }
-
 }
