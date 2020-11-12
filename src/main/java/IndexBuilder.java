@@ -28,7 +28,6 @@ public class IndexBuilder {
         DocumentCorpus corpus = DirectoryCorpus.loadDirectory(Paths.get(directory), ".json", ".txt"); ;
         System.out.println("1. Build index: ");
         System.out.println("2. Query index: ");
-
         String choice = sc.nextLine();
         switch (Integer.parseInt(choice)) {
             case 1:
@@ -38,7 +37,7 @@ public class IndexBuilder {
                 Index index = indexCorpus(corpus, kGramIndex);
                 System.out.println("Done!");
                 DiskIndexWriter writer = new DiskIndexWriter();
-                map = writer.writeIndex(index,db, Paths.get(directory));
+                map = writer.writeIndex(index, db, Paths.get(directory));
             case 2:
                 System.out.println("Select modes: ");
                 System.out.println("1. Boolean query mode");
@@ -57,7 +56,7 @@ public class IndexBuilder {
                         System.out.println("Pleas enter the mode: ");
                         System.out.println("1. Default ");
                         System.out.println("2. tf-idf ");
-                        System.out.println("3. Okapi BM25 s");
+                        System.out.println("3. Okapi BM25 ");
                         System.out.println("4. Wacky ");
                         String weight = sc.nextLine();
                         while (true) {
@@ -65,7 +64,6 @@ public class IndexBuilder {
                             String query = sc.nextLine();
                             if (query.equals("quit")) {
                                 System.out.println("Exit the search.");
-                                db.close();
                                 break;
                             } else {
                                 Strategy weightMode = WeightModeFactory.getMode(weight);
@@ -81,7 +79,6 @@ public class IndexBuilder {
                         break;
                 }
         }
-
 
 
 
