@@ -85,7 +85,7 @@ public class IndexBuilder {
 
                             }
                             for (topKPosting tp : topK) {
-                                System.out.print("Title: " + corpus.getDocument(tp.getDocumentId()));
+                                System.out.print("Title: " + corpus.getDocument(tp.getDocumentId()).getFileTitle());
                                 System.out.println(" Score: " + tp.getScore());
                             }
                         }
@@ -152,7 +152,7 @@ public class IndexBuilder {
         for (Map.Entry<Integer, Float> entry : accumulators.entrySet()) {
             pq.offer(entry);
         }
-        int count = 0;
+        int count =0;
         while (!pq.isEmpty() && count <k) {
             topKPosting tp = new topKPosting(pq.peek().getKey(), pq.poll().getValue());
             results.add(tp);
