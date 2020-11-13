@@ -30,8 +30,8 @@ public class DiskIndexWriter {
         dataOutputStream = new DataOutputStream(fileOutputStream);
         for(String s : index.getVocabulary()){
             int lastDocId = 0;
-            int lastPosition = 0;
             for(Posting p : index.getPostings(s)){
+                int lastPosition = 0;
                 if(p.getDocumentId() == index.getPostings(s).get(0).getDocumentId()){
                     currentPosition = dataOutputStream.size();
                     dataOutputStream.writeInt(index.getPostings(s).size());

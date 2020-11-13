@@ -56,7 +56,8 @@ public class IndexBuilder {
                         .fileMmapEnable()
                         .closeOnJvmShutdown()
                         .make();
-                map= db.treeMap("mapsl", Serializer.STRING, Serializer.INTEGER).createOrOpen();;
+                map= db.treeMap("mapsl", Serializer.STRING, Serializer.INTEGER).createOrOpen();
+                corpus.getCorpusSize();
                 System.out.println("Select modes: ");
                 System.out.println("1. Boolean query mode");
                 System.out.println("2. Ranked query mode");
@@ -87,11 +88,15 @@ public class IndexBuilder {
                                     System.out.println(query);
                                     BooleanQueryParser parser = new BooleanQueryParser();
                                     Query queryPosting = parser.parseQuery(query);
-                                    for (Posting p : queryPosting.getPostings(index)) {
+                                    ArrayList<Posting> result = new ArrayList<>(queryPosting.getPostings(dIndex));
+                                    for (Posting p : result) {
+                                        Reader read = corpus.getDocument(p.getDocumentId()).getContent();
                                         System.out.println("Document: " + corpus.getDocument(p.getDocumentId()).getFileTitle());
+                                        read.close();
                                     }
-                                    System.out.println(queryPosting.getPostings(index).size());
+                                    System.out.println(result.size());
                                 } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
                             }
                         }
@@ -117,9 +122,10 @@ public class IndexBuilder {
 
                             }
                             for (topKPosting tp : topK) {
-                                corpus.getDocument(tp.getDocumentId()).getContent();
+                                Reader read = corpus.getDocument(tp.getDocumentId()).getContent();
                                 System.out.print("Title: " + corpus.getDocument(tp.getDocumentId()).getFileTitle());
                                 System.out.println(" Score: " + tp.getScore());
+                                read.close();
                             }
                         }
                         break;

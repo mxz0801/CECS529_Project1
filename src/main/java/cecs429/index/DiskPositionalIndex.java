@@ -16,10 +16,10 @@ public class DiskPositionalIndex implements Index{
     Double Ld;
     Double Wdt;
 
-    ConcurrentMap<String, Integer> map;
+    BTreeMap<String, Integer> map;
 
 
-    public void loadMap(ConcurrentMap<String, Integer> map) {
+    public void loadMap(BTreeMap<String, Integer> map) {
 
         this.map = map;
     }
