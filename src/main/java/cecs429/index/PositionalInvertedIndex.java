@@ -27,14 +27,6 @@ public class PositionalInvertedIndex implements Index {
 		else if(mIndex.get(term).get(mIndex.get(term).size() - 1).getDocumentId() == documentId)
 			mIndex.get(term).get(mIndex.get(term).size() - 1).getPosition().add(position);
 	}
-
-	public boolean hasTerm(String term) {
-		if(mIndex.containsKey(term))
-			return true;
-		else
-			return  false;
-
-	}
 	
 	@Override
 	public List<Posting> getPostings(String term) {

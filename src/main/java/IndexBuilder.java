@@ -118,6 +118,7 @@ public class IndexBuilder {
 
                             }
                             for (topKPosting tp : topK) {
+                                corpus.getDocument(tp.getDocumentId()).getContent();
                                 System.out.print("Title: " + corpus.getDocument(tp.getDocumentId()).getFileTitle());
                                 System.out.println(" Score: " + tp.getScore());
                             }
@@ -134,27 +135,30 @@ public class IndexBuilder {
         ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
         PositionalInvertedIndex index = new PositionalInvertedIndex();
         int totalTokens = 0;
+
         for (Document sDocument : corpus.getDocuments()) {
             TokenStream stream = new EnglishTokenStream(sDocument.getContent());
             Iterable<String> token = stream.getTokens();
             int docTokens = 0, byteSize = 0, termCount=0, tfCount = 0;
             int position = 1;
+            ArrayList<String> docVocab = new ArrayList<>();
             for (String t : token) {
                 totalTokens++;
                 docTokens++;
                 t.replaceAll("\\W", "").toLowerCase();
                 byteSize += t.length();
+                if(!docVocab.contains(getStem(t))){
+                    docVocab.add(getStem(t));
+                    termCount++;
+                }
                 List<String> word = processor.processToken(t);
                 if (word.size() > 0) {
                     for (String s : word) {
                         index.addTerm(s, sDocument.getId(), position);
-
                     }
                     position++;
                     tfCount++;
                 }
-                if(!index.hasTerm(t))
-                    termCount++;
             }
             weightPosting w = new weightPosting(sDocument.getId(),docTokens, byteSize,((double)tfCount/termCount));
             wp.add(w);

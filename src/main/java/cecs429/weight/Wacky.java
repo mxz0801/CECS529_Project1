@@ -4,13 +4,13 @@ import cecs429.index.DiskPositionalIndex;
 
 public class Wacky implements Strategy{
     @Override
-    public Float getWdt(Integer tftd, double tokensInDoc, double aveTokensInCorpus, double aveTftd) {
-        return (float)((1+Math.log(tftd)/Math.log(Math.E))/(1+Math.log(aveTftd)/Math.log(Math.E)));
+    public Float getWdt(double tftd, double tokensInDoc, double aveTokensInCorpus, double aveTftd) {
+        return (float)((1+Math.log(tftd))/(1+Math.log(aveTftd)));
     }
 
     @Override
-    public Float getWqt(Integer corpusSize, Integer dft) {
-        return (float)Math.max(0, Math.log((corpusSize-dft)/dft)/Math.log(Math.E));
+    public Float getWqt(double corpusSize, double dft) {
+        return (float)Math.max(0, Math.log((corpusSize-dft)/dft));
     }
 
     @Override

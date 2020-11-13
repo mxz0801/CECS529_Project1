@@ -8,13 +8,13 @@ import java.util.HashMap;
 public class Default implements Strategy{
 
     @Override
-    public Float getWdt(Integer tftd, double tokensInDoc, double aveTokensInCorpus, double aveTftd) {
-        return (float)(1 + Math.log(tftd)/Math.log(Math.E));
+    public Float getWdt(double tftd, double tokensInDoc, double aveTokensInCorpus, double aveTftd) {
+        return (float)(1 + Math.log(tftd));
     }
 
     @Override
-    public Float getWqt(Integer corpusSize, Integer dft) {
-        return (float) (Math.log(1 + corpusSize / dft)/Math.E);
+    public Float getWqt(double corpusSize, double dft) {
+        return (float) (Math.log(1 + corpusSize / dft));
     }
 
     @Override

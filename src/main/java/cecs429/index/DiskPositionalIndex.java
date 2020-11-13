@@ -112,16 +112,28 @@ public class DiskPositionalIndex implements Index{
         List<Double> result = new ArrayList<>();
         fileInputStream = new FileInputStream( "corpus/index/docWeights.bin");
         dataInputStream = new DataInputStream(fileInputStream);
-        while(dataInputStream.available()>0){
+        int jump = (docId)*40;
+        dataInputStream.skipBytes(jump);
+        try {
             int id = (int) dataInputStream.readDouble();
-            if(id == docId){
-                for(int i=0; i < 4; i++)
-                    result.add(dataInputStream.readDouble());
-                break;
-            }else{
-                dataInputStream.skipBytes(32);
-            }
+            for(int i=0; i < 4; i++)
+                result.add(dataInputStream.readDouble());
+            dataInputStream.close();
+            fileInputStream.close();
+        }catch (Exception e){
+            e.printStackTrace();
         }
+
+//        while(dataInputStream.available()>0){
+//            int id = (int) dataInputStream.readDouble();
+//            if(id == docId){
+//                for(int i=0; i < 4; i++)
+//                    result.add(dataInputStream.readDouble());
+//                break;
+//            }else{
+//                dataInputStream.skipBytes(32);
+//            }
+//        }
         return result;
     }
     public double getDocLength() throws IOException {
