@@ -1,5 +1,6 @@
 package cecs429.writer;
 
+import cecs429.encode.VariableByteEncoding;
 import cecs429.index.Index;
 import cecs429.index.Posting;
 import org.mapdb.BTreeMap;
@@ -29,19 +30,24 @@ public class DiskIndexWriter {
         fileOutputStream = new FileOutputStream(corpusAbsolutePath + "/index/postings.bin");
         dataOutputStream = new DataOutputStream(fileOutputStream);
         for(String s : index.getVocabulary()){
+            VariableByteEncoding vbe = new VariableByteEncoding();
             int lastDocId = 0;
             for(Posting p : index.getPostings(s)){
                 int lastPosition = 0;
                 if(p.getDocumentId() == index.getPostings(s).get(0).getDocumentId()){
                     currentPosition = dataOutputStream.size();
                     dataOutputStream.writeInt(index.getPostings(s).size());
+                  //  dataOutputStream.write(vbe.encodeNumber(index.getPostings(s).size()));
                 }
                 dataOutputStream.writeInt(p.getDocumentId() - lastDocId);
                 dataOutputStream.writeInt(p.getPosition().size());
+//                dataOutputStream.write(vbe.encodeNumber(p.getDocumentId() - lastDocId));
+//                dataOutputStream.write(vbe.encodeNumber(p.getPosition().size()));
 
                 lastDocId = p.getDocumentId();
                 for(Integer position : p.getPosition()){
                     dataOutputStream.writeInt(position - lastPosition);
+//                    dataOutputStream.write(vbe.encodeNumber(position - lastPosition));
                     lastPosition = position;
                 }
             }

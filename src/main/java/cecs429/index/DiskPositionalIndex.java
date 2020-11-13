@@ -1,8 +1,10 @@
 package cecs429.index;
 
+import cecs429.encode.VariableByteEncoding;
 import org.mapdb.BTreeMap;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
@@ -12,49 +14,45 @@ public class DiskPositionalIndex implements Index{
 
     FileOutputStream fileOutputStream = null;
     DataOutputStream dataOutputStream = null;
-    Map<Integer, Double> weightMap = new HashMap<>();
-    Double Ld;
-    Double Wdt;
-
     BTreeMap<String, Integer> map;
-
 
     public void loadMap(BTreeMap<String, Integer> map) {
 
         this.map = map;
     }
 
-    public void docWeight(ArrayList<weightPosting> wp) throws IOException {
-        fileInputStream = new FileInputStream( "corpus/index/postings.bin");
-        dataInputStream = new DataInputStream(fileInputStream);
-        while(dataInputStream.available()>0){
-            int docCount = dataInputStream.readInt();
-            for(int i = 0; i<docCount; i++){
-                int docId = dataInputStream.readInt();
-                int termCount = dataInputStream.readInt();
-                if(termCount!=0){
-                    Wdt = (1+Math.log(termCount));
-                    Wdt = Math.pow(Wdt,2);
-
-                    if(weightMap.containsKey(docId)){
-                        Wdt += weightMap.get(docId);
-                    }
-                    weightMap.put(docId,Wdt);
-                }
-                dataInputStream.skipBytes(4*termCount);
-            }
-        }
-        storeWeight(weightMap,wp);
-    }
+//    public void docWeight(ArrayList<weightPosting> wp) throws IOException {
+//        fileInputStream = new FileInputStream( "corpus/index/postings.bin");
+//        dataInputStream = new DataInputStream(fileInputStream);
+//        while(dataInputStream.available()>0){
+//            int docCount = dataInputStream.readInt();
+//            for(int i = 0; i<docCount; i++){
+//                int docId = dataInputStream.readInt();
+//                int termCount = dataInputStream.readInt();
+//                if(termCount!=0){
+//                    Wdt = (1+Math.log(termCount));
+//                    Wdt = Math.pow(Wdt,2);
+//
+//                    if(weightMap.containsKey(docId)){
+//                        Wdt += weightMap.get(docId);
+//                    }
+//                    weightMap.put(docId,Wdt);
+//                }
+//                dataInputStream.skipBytes(4*termCount);
+//            }
+//        }
+//        storeWeight(weightMap,wp);
+//    }
 
     private ArrayList<Posting> seek(Integer index, boolean checker) throws IOException {
 
         ArrayList<Posting> posting = new ArrayList<>();
         fileInputStream = new FileInputStream( "corpus/index/postings.bin");
         dataInputStream = new DataInputStream(fileInputStream);
-
+        VariableByteEncoding a = new VariableByteEncoding();
         dataInputStream.skipBytes(index);
         int docCount = dataInputStream.readInt();
+//        int docCount = a.decode(findNumber(dataInputStream)).get(0);
         int docId = 0;
         for(int i = 0; i<docCount; i++){
             int pos = 0;
@@ -76,30 +74,17 @@ public class DiskPositionalIndex implements Index{
         return posting;
     }
 
-    private void storeWeight(Map weightMap, ArrayList<weightPosting> wp) throws IOException {
+    public void storeWeight(ArrayList<weightPosting> wp) throws IOException {
         fileOutputStream = new FileOutputStream("corpus/index/docWeights.bin");
         dataOutputStream = new DataOutputStream(fileOutputStream);
-
-        weightMap.forEach((k,v) ->{
-            int docId = (int) k;
-            Wdt = (double) v;
-            Ld = Math.sqrt(Wdt);
-            try {
-                dataOutputStream.writeDouble(docId);
-                dataOutputStream.writeDouble(Ld);
                 for(weightPosting p : wp){
-                    if(p.getDocumentID()==docId){
+                        dataOutputStream.writeDouble(p.getDocumentID());
+                        dataOutputStream.writeDouble(p.getLd());
                         dataOutputStream.writeDouble(p.getDocLengthD());
                         dataOutputStream.writeDouble(p.getByteSize());
                         dataOutputStream.writeDouble(p.getAveTfd());
                         break;
                     }
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
 
     }
     public void storeDocLength(int totalTokens) throws IOException {
@@ -134,6 +119,19 @@ public class DiskPositionalIndex implements Index{
 //                dataInputStream.skipBytes(32);
 //            }
 //        }
+        return result;
+    }
+
+    private byte[] findNumber(DataInputStream inputStream) throws IOException {
+        Byte b;
+        ByteBuffer buf = ByteBuffer.allocate((Integer.SIZE / Byte.SIZE));
+        do{
+            b = inputStream.readByte();
+            buf.put(b);
+        }while((b & 0x80) == 0);//top-most bit of 0
+        buf.flip();
+        byte[] result = new byte[buf.limit()];
+        buf.get(result);
         return result;
     }
     public double getDocLength() throws IOException {
