@@ -24,28 +24,28 @@ public class DiskPositionalIndex implements Index{
         this.map = map;
     }
 
-    public void docWeight(ArrayList<weightPosting> wp) throws IOException {
-        fileInputStream = new FileInputStream( "corpus/index/postings.bin");
-        dataInputStream = new DataInputStream(fileInputStream);
-        while(dataInputStream.available()>0){
-            int docCount = dataInputStream.readInt();
-            for(int i = 0; i<docCount; i++){
-                int docId = dataInputStream.readInt();
-                int termCount = dataInputStream.readInt();
-                if(termCount!=0){
-                    Wdt = (1+Math.log(termCount));
-                    Wdt = Math.pow(Wdt,2);
-
-                    if(weightMap.containsKey(docId)){
-                        Wdt += weightMap.get(docId);
-                    }
-                    weightMap.put(docId,Wdt);
-                }
-                dataInputStream.skipBytes(4*termCount);
-            }
-        }
-        storeWeight(weightMap,wp);
-    }
+//    public void docWeight(ArrayList<weightPosting> wp) throws IOException {
+//        fileInputStream = new FileInputStream( "corpus/index/postings.bin");
+//        dataInputStream = new DataInputStream(fileInputStream);
+//        while(dataInputStream.available()>0){
+//            int docCount = dataInputStream.readInt();
+//            for(int i = 0; i<docCount; i++){
+//                int docId = dataInputStream.readInt();
+//                int termCount = dataInputStream.readInt();
+//                if(termCount!=0){
+//                    Wdt = (1+Math.log(termCount));
+//                    Wdt = Math.pow(Wdt,2);
+//
+//                    if(weightMap.containsKey(docId)){
+//                        Wdt += weightMap.get(docId);
+//                    }
+//                    weightMap.put(docId,Wdt);
+//                }
+//                dataInputStream.skipBytes(4*termCount);
+//            }
+//        }
+//        storeWeight(weightMap,wp);
+//    }
 
     private ArrayList<Posting> seek(Integer index, boolean checker) throws IOException {
 
@@ -76,30 +76,17 @@ public class DiskPositionalIndex implements Index{
         return posting;
     }
 
-    private void storeWeight(Map weightMap, ArrayList<weightPosting> wp) throws IOException {
+    public void storeWeight(ArrayList<weightPosting> wp) throws IOException {
         fileOutputStream = new FileOutputStream("corpus/index/docWeights.bin");
         dataOutputStream = new DataOutputStream(fileOutputStream);
 
-        weightMap.forEach((k,v) ->{
-            int docId = (int) k;
-            Wdt = (double) v;
-            Ld = Math.sqrt(Wdt);
-            try {
-                dataOutputStream.writeDouble(docId);
-                dataOutputStream.writeDouble(Ld);
-                for(weightPosting p : wp){
-                    if(p.getDocumentID()==docId){
-                        dataOutputStream.writeDouble(p.getDocLengthD());
-                        dataOutputStream.writeDouble(p.getByteSize());
-                        dataOutputStream.writeDouble(p.getAveTfd());
-                        break;
-                    }
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+        for(weightPosting p : wp){
+            dataOutputStream.writeDouble(p.getDocumentID());
+            dataOutputStream.writeDouble(p.getLd());
+            dataOutputStream.writeDouble(p.getDocLengthD());
+            dataOutputStream.writeDouble(p.getByteSize());
+            dataOutputStream.writeDouble(p.getAveTfd());
+        }
 
     }
     public void storeDocLength(int totalTokens) throws IOException {

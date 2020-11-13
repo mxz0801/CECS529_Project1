@@ -46,7 +46,7 @@ public class IndexBuilder {
                 index = indexCorpus(corpus, kGramIndex, dIndex, wp);
                 DiskIndexWriter writer = new DiskIndexWriter();
                 map = writer.writeIndex(index,map,Paths.get(directory));
-                dIndex.docWeight(wp);
+                dIndex.storeWeight(wp);
                 db.close();
                 System.out.println("Done!");
             case 2:
@@ -140,10 +140,20 @@ public class IndexBuilder {
             Iterable<String> token = stream.getTokens();
             int docTokens = 0, byteSize = 0, termCount=0, tfCount = 0;
             int position = 1;
+            HashMap<String, Integer> docVocabFreq = new HashMap<>();
+
             ArrayList<String> docVocab = new ArrayList<>();
             for (String t : token) {
                 totalTokens++;
                 docTokens++;
+                if(docVocabFreq.containsKey(t)){
+                    Integer buff= docVocabFreq.get(t);
+                    buff++;
+                    docVocabFreq.put(t,buff);
+                }
+                else{
+                    docVocabFreq.put(t,1);
+                }
                 t.replaceAll("\\W", "").toLowerCase();
                 byteSize += t.length();
                 if(!docVocab.contains(getStem(t))){
@@ -159,7 +169,13 @@ public class IndexBuilder {
                     tfCount++;
                 }
             }
-            weightPosting w = new weightPosting(sDocument.getId(),docTokens, byteSize,((double)tfCount/termCount));
+            double Ld = 0;
+            for(double ld : docVocabFreq.values()){
+                double wdt = 1 + Math.log(ld);
+                Ld += Math.pow(wdt,2);
+            }
+            Ld = Math.sqrt(Ld);
+            weightPosting w = new weightPosting(sDocument.getId(),Ld,docTokens, byteSize,((double)tfCount/termCount));
             wp.add(w);
             stream.close();
         }

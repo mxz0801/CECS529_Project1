@@ -2,11 +2,13 @@ package cecs429.index;
 
 public class weightPosting {
     private int mDocumentID;
+    private double mLd;
     private int mDocLengthD;
     private int mByteSize;
     private double mAveTfd;
-    public weightPosting(int documenID,int docLengthD, int byteSize, double aveTfd) {
+    public weightPosting(int documenID,double Ld,int docLengthD, int byteSize, double aveTfd) {
         this.mDocumentID = documenID;
+        this.mLd = Ld;
         this.mDocLengthD = docLengthD;
         this.mByteSize = byteSize;
         this.mAveTfd = aveTfd;
@@ -25,5 +27,8 @@ public class weightPosting {
     public double getAveTfd(){
         return mAveTfd;
     }
-
+    public  double getLd()
+    {
+        return mLd;
+    }
 }
