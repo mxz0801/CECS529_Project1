@@ -49,23 +49,24 @@ public class PhraseLiteral implements Query {
 
 			List<Posting> bufferList = new ArrayList<>();
 			// compare the docID in each two terms
-			while (i < result.size() && j < index.getPostings(s).size()) {
+			ArrayList<Posting> sPosting = new ArrayList<>(index.getPostings(s));
+			while (i < result.size() && j < sPosting.size()) {
 				//find the same docID
-				if (result.get(i).getDocumentId() == index.getPostings(s).get(j).getDocumentId()) {
+				if (result.get(i).getDocumentId() == sPosting.get(j).getDocumentId()) {
 					int m = 0;
 					int n = 0;
 					// compare the position
 					ArrayList<Integer> positionList = new ArrayList<>();
 					Posting p = new Posting(result.get(i).getDocumentId(), positionList);
-					while (m < result.get(i).getPosition().size() && n < index.getPostings(s).get(j).getPosition().size()) {
+					while (m < result.get(i).getPosition().size() && n < sPosting.get(j).getPosition().size()) {
 						//find the position with phrase's order
-						if (index.getPostings(s).get(j).getPosition().get(n) == result.get(i).getPosition().get(m) + gapOfDoc) {
+						if (sPosting.get(j).getPosition().get(n) == result.get(i).getPosition().get(m) + gapOfDoc) {
 							positionList.add(result.get(i).getPosition().get(m));
 							break;
 						}
-						else if (index.getPostings(s).get(j).getPosition().get(n) <= result.get(i).getPosition().get(m))
+						else if (sPosting.get(j).getPosition().get(n) <= result.get(i).getPosition().get(m))
 							n++;
-						else if (index.getPostings(s).get(j).getPosition().get(n) > result.get(i).getPosition().get(m))
+						else if (sPosting.get(j).getPosition().get(n) > result.get(i).getPosition().get(m))
 							m++;
 					}
 					if(positionList.size() != 0)
@@ -73,9 +74,9 @@ public class PhraseLiteral implements Query {
 					i++;
 					j++;
 				}
-				else if (result.get(i).getDocumentId() < index.getPostings(s).get(j).getDocumentId())
+				else if (result.get(i).getDocumentId() < sPosting.get(j).getDocumentId())
 					i++;
-				else if (result.get(i).getDocumentId() > index.getPostings(s).get(j).getDocumentId())
+				else if (result.get(i).getDocumentId() > sPosting.get(j).getDocumentId())
 					j++;
 			}
 			gapOfDoc++;

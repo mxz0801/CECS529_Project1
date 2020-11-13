@@ -56,7 +56,8 @@ public class IndexBuilder {
                         .fileMmapEnable()
                         .closeOnJvmShutdown()
                         .make();
-                map= db.treeMap("mapsl", Serializer.STRING, Serializer.INTEGER).createOrOpen();;
+                map= db.treeMap("mapsl", Serializer.STRING, Serializer.INTEGER).createOrOpen();
+                corpus.getCorpusSize();
                 System.out.println("Select modes: ");
                 System.out.println("1. Boolean query mode");
                 System.out.println("2. Ranked query mode");
@@ -87,11 +88,15 @@ public class IndexBuilder {
                                     System.out.println(query);
                                     BooleanQueryParser parser = new BooleanQueryParser();
                                     Query queryPosting = parser.parseQuery(query);
-                                    for (Posting p : queryPosting.getPostings(index)) {
+                                    ArrayList<Posting> result = new ArrayList<>(queryPosting.getPostings(dIndex));
+                                    for (Posting p : result) {
+                                        Reader read = corpus.getDocument(p.getDocumentId()).getContent();
                                         System.out.println("Document: " + corpus.getDocument(p.getDocumentId()).getFileTitle());
+                                        read.close();
                                     }
-                                    System.out.println(queryPosting.getPostings(index).size());
+                                    System.out.println(result.size());
                                 } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
                             }
                         }
@@ -117,9 +122,10 @@ public class IndexBuilder {
 
                             }
                             for (topKPosting tp : topK) {
-                                corpus.getDocument(tp.getDocumentId()).getContent();
+                                Reader read = corpus.getDocument(tp.getDocumentId()).getContent();
                                 System.out.print("Title: " + corpus.getDocument(tp.getDocumentId()).getFileTitle());
                                 System.out.println(" Score: " + tp.getScore());
+                                read.close();
                             }
                         }
                         break;
@@ -141,7 +147,6 @@ public class IndexBuilder {
             int docTokens = 0, byteSize = 0, termCount=0, tfCount = 0;
             int position = 1;
             HashMap<String, Integer> docVocabFreq = new HashMap<>();
-
             ArrayList<String> docVocab = new ArrayList<>();
             for (String t : token) {
                 totalTokens++;
@@ -160,6 +165,7 @@ public class IndexBuilder {
                     docVocab.add(getStem(t));
                     termCount++;
                 }
+
                 List<String> word = processor.processToken(t);
                 if (word.size() > 0) {
                     for (String s : word) {
@@ -175,10 +181,11 @@ public class IndexBuilder {
                 Ld += Math.pow(wdt,2);
             }
             Ld = Math.sqrt(Ld);
-            weightPosting w = new weightPosting(sDocument.getId(),Ld,docTokens, byteSize,((double)tfCount/termCount));
+            weightPosting w = new weightPosting(sDocument.getId(),Ld, docTokens, byteSize,((double)tfCount/termCount));
             wp.add(w);
             stream.close();
         }
+
         dIndex.storeDocLength(totalTokens/ corpus.getCorpusSize());
         return index;
     }
@@ -189,7 +196,7 @@ public class IndexBuilder {
         for (String s : query.split(" ")) {
             List<Posting> temp = dIndex.getPostings(s,false);
             Float wqt = weighMode.getWqt(corpusSize, temp.size());
-            //System.out.println("doing wqt");
+           // System.out.println("doing wqt" );
             for (Posting p : temp) {
                 Float wdt = weighMode.getWdt(p.getPosition().get(0),
                         dIndex.getWeight(p.getDocumentId()).get(1),

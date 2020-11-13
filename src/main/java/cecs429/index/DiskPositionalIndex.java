@@ -12,14 +12,9 @@ public class DiskPositionalIndex implements Index{
 
     FileOutputStream fileOutputStream = null;
     DataOutputStream dataOutputStream = null;
-    Map<Integer, Double> weightMap = new HashMap<>();
-    Double Ld;
-    Double Wdt;
+    BTreeMap<String, Integer> map;
 
-    ConcurrentMap<String, Integer> map;
-
-
-    public void loadMap(ConcurrentMap<String, Integer> map) {
+    public void loadMap(BTreeMap<String, Integer> map) {
 
         this.map = map;
     }
@@ -52,9 +47,10 @@ public class DiskPositionalIndex implements Index{
         ArrayList<Posting> posting = new ArrayList<>();
         fileInputStream = new FileInputStream( "corpus/index/postings.bin");
         dataInputStream = new DataInputStream(fileInputStream);
-
+        //VariableByteEncoding a = new VariableByteEncoding();
         dataInputStream.skipBytes(index);
         int docCount = dataInputStream.readInt();
+//      int docCount = a.decode(findNumber(dataInputStream)).get(0);
         int docId = 0;
         for(int i = 0; i<docCount; i++){
             int pos = 0;
@@ -123,6 +119,19 @@ public class DiskPositionalIndex implements Index{
 //        }
         return result;
     }
+
+//    private byte[] findNumber(DataInputStream inputStream) throws IOException {
+//        Byte b;
+//        ByteBuffer buf = ByteBuffer.allocate((Integer.SIZE / Byte.SIZE));
+//        do{
+//            b = inputStream.readByte();
+//            buf.put(b);
+//        }while((b & 0x80) == 0);//top-most bit of 0
+//        buf.flip();
+//        byte[] result = new byte[buf.limit()];
+//        buf.get(result);
+//        return result;
+//    }
     public double getDocLength() throws IOException {
         fileInputStream = new FileInputStream( "corpus/index/docLength.bin");
         dataInputStream = new DataInputStream(fileInputStream);

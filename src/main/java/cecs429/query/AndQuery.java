@@ -28,21 +28,22 @@ public class AndQuery implements Query {
 		// intersecting the resulting postings.
 		for(Query q : mChildren){
 			if(q == mChildren.get(0)) {
-				result = index.getPostings(q.toString());
+				result = index.getPostings(q.toString(),false);
 				continue;
 			}
 			int i = 0;
 			int j = 0;
 			List<Posting> bufferList = new ArrayList<>();
-			while(i < result.size() && j < index.getPostings(q.toString()).size()){
-				if(result.get(i).getDocumentId() == index.getPostings(q.toString()).get(j).getDocumentId()) {
+			ArrayList<Posting> jPosting =  new ArrayList<>(index.getPostings(q.toString(),false));
+			while(i < result.size() && j < jPosting.size()){
+				if(result.get(i).getDocumentId() == jPosting.get(j).getDocumentId()) {
 					bufferList.add(result.get(i));
 					i++;
 					j++;
 				}
-				else if(result.get(i).getDocumentId() < index.getPostings(q.toString()).get(j).getDocumentId())
+				else if(result.get(i).getDocumentId() < jPosting.get(j).getDocumentId())
 					i++;
-				else  if(result.get(i).getDocumentId() > index.getPostings(q.toString()).get(j).getDocumentId())
+				else  if(result.get(i).getDocumentId() > jPosting.get(j).getDocumentId())
 					j++;
 			}
 			result = new ArrayList<>(bufferList);
