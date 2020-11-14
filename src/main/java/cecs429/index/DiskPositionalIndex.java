@@ -7,7 +7,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-public class DiskPositionalIndex implements Index{
+public class DiskPositionalIndex implements Index {
     FileInputStream fileInputStream = null;
     DataInputStream dataInputStream = null;
 
@@ -23,7 +23,7 @@ public class DiskPositionalIndex implements Index{
     private ArrayList<Posting> seek(Integer index, boolean checker) throws IOException {
 
         ArrayList<Posting> posting = new ArrayList<>();
-        fileInputStream = new FileInputStream( "corpus/index/postings.bin");
+        fileInputStream = new FileInputStream("corpus/index/postings.bin");
         dataInputStream = new DataInputStream(fileInputStream);
         VariableByteEncoding a = new VariableByteEncoding();
         dataInputStream.skipBytes(index);
@@ -76,7 +76,7 @@ public class DiskPositionalIndex implements Index{
 
     public List<Double> getWeight(int docId) throws IOException {
         List<Double> result = new ArrayList<>();
-        fileInputStream = new FileInputStream( "corpus/index/docWeights.bin");
+        fileInputStream = new FileInputStream("corpus/index/docWeights.bin");
         dataInputStream = new DataInputStream(fileInputStream);
         int jump = (docId) * 40;
         dataInputStream.skipBytes(jump);
@@ -86,7 +86,7 @@ public class DiskPositionalIndex implements Index{
                 result.add(dataInputStream.readDouble());
             dataInputStream.close();
             fileInputStream.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -108,10 +108,10 @@ public class DiskPositionalIndex implements Index{
         ByteBuffer buf = ByteBuffer.allocate((Integer.SIZE / Byte.SIZE));
         b = inputStream.readByte();
         buf.put(b);
-        if(buf.get(0) == 0x00)
+        if (buf.get(0) == 0x00)
             return new byte[]{0};
-        else{
-            while ((b & 0x80) == 0){//top-most bit of 0
+        else {
+            while ((b & 0x80) == 0) {//top-most bit of 0
                 b = inputStream.readByte();
                 buf.put(b);
             }
@@ -119,11 +119,12 @@ public class DiskPositionalIndex implements Index{
         buf.flip();
         byte[] result = new byte[buf.limit()];
         buf.get(result);
+
         return result;
     }
 
     public double getDocLength() throws IOException {
-        fileInputStream = new FileInputStream( "corpus/index/docLength.bin");
+        fileInputStream = new FileInputStream("corpus/index/docLength.bin");
         dataInputStream = new DataInputStream(fileInputStream);
         double result = dataInputStream.readDouble();
         dataInputStream.close();
@@ -135,9 +136,9 @@ public class DiskPositionalIndex implements Index{
     public ArrayList<Posting> getPostings(String term) {
         ArrayList<Posting> p = new ArrayList<>();
         if (map.containsKey(term)) {
-            Integer index =  map.get(term);
+            Integer index = map.get(term);
             try {
-                p = seek(index,true);
+                p = seek(index, true);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -149,9 +150,9 @@ public class DiskPositionalIndex implements Index{
     public List<Posting> getPostings(String term, boolean check) {
         ArrayList<Posting> p = new ArrayList<>();
         if (map.containsKey(term)) {
-            Integer index =  map.get(term);
+            Integer index = map.get(term);
             try {
-                p = seek(index,check);
+                p = seek(index, check);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -162,7 +163,7 @@ public class DiskPositionalIndex implements Index{
     @Override
     public List<String> getVocabulary() {
         List<String> vocab = new ArrayList<>();
-        map.forEach((k,v) ->{
+        map.forEach((k, v) -> {
             vocab.add(k);
         });
         return vocab;

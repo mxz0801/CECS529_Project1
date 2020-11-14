@@ -116,7 +116,7 @@ public class IndexBuilder {
                                 db.close();
                                 break;
                             } else {
-                                query = getStem(query);
+                                query = processQuery(query);
                                 Strategy weightMode = weightF.getMode(weight);
                                 topK = score(weightMode, query, dIndex, corpus.getCorpusSize(), 10);
 
