@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VariableByteEncoding {
-    public byte[] encodeNumber(int n){
+    private byte[] encodeNumber(int n){
         if (n == 0) {
             return new byte[]{0};
         }

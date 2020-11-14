@@ -138,25 +138,20 @@ public class IndexBuilder {
     private static Index indexCorpus(DocumentCorpus corpus, KgramIndex kgramIndex,DiskPositionalIndex dIndex, ArrayList<weightPosting> wp) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
         PositionalInvertedIndex index = new PositionalInvertedIndex();
-        int totalTokens = 0;
-
+        Set<String> totalTokens = new HashSet<>();
         for (Document sDocument : corpus.getDocuments()) {
             TokenStream stream = new EnglishTokenStream(sDocument.getContent());
             Iterable<String> token = stream.getTokens();
-            int docTokens = 0, byteSize = 0, termCount=0, tfCount = 0;
+            int byteSize = 0, tfCount = 0;
             int position = 1;
             HashMap<String, Integer> docVocabFreq = new HashMap<>();
-            ArrayList<String> docVocab = new ArrayList<>();
+            Set<String> docTokens = new HashSet<>();
             for (String t : token) {
-                totalTokens++;
-                docTokens++;
+                totalTokens.add(t);
+                docTokens.add(t);
                 String newT = getStem(t);
                 t.replaceAll("\\W", "").toLowerCase();
                 byteSize += t.length();
-                if(!docVocab.contains(newT)){
-                    docVocab.add(newT);
-                    termCount++;
-                }
                 if(docVocabFreq.containsKey(newT)){
                     Integer buff= docVocabFreq.get(newT);
                     buff++;
@@ -180,12 +175,12 @@ public class IndexBuilder {
                 Ld += Math.pow(wdt,2);
             }
             Ld = Math.sqrt(Ld);
-            weightPosting w = new weightPosting(sDocument.getId(),Ld, docTokens, byteSize,((double)tfCount/termCount));
+            weightPosting w = new weightPosting(sDocument.getId(),Ld, docTokens.size(), byteSize,((double)tfCount/docVocabFreq.size()));
             wp.add(w);
             stream.close();
         }
 
-        dIndex.storeDocLength(totalTokens/ corpus.getCorpusSize());
+        dIndex.storeDocLength(totalTokens.size()/ corpus.getCorpusSize());
         return index;
     }
 

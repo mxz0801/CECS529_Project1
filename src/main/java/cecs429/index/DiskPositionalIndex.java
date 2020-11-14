@@ -48,6 +48,8 @@ public class DiskPositionalIndex implements Index{
             posting.add(new Posting(docId, position));
 
         }
+        dataInputStream.close();
+        fileInputStream.close();
         return posting;
     }
 
@@ -61,6 +63,8 @@ public class DiskPositionalIndex implements Index{
             dataOutputStream.writeDouble(p.getByteSize());
             dataOutputStream.writeDouble(p.getAveTfd());
         }
+        dataOutputStream.close();
+        fileOutputStream.close();
 
     }
 

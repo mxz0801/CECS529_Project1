@@ -6,8 +6,8 @@ public class weightPosting {
     private int mDocLengthD;
     private int mByteSize;
     private double mAveTfd;
-    public weightPosting(int documenID,double Ld,int docLengthD, int byteSize, double aveTfd) {
-        this.mDocumentID = documenID;
+    public weightPosting(int documentID,double Ld,int docLengthD, int byteSize, double aveTfd) {
+        this.mDocumentID = documentID;
         this.mLd = Ld;
         this.mDocLengthD = docLengthD;
         this.mByteSize = byteSize;
