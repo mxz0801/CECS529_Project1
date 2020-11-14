@@ -2,18 +2,15 @@ import java.io.*;
 
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 
 import cecs429.documents.*;
 import cecs429.index.*;
 import cecs429.query.BooleanQueryParser;
 import cecs429.query.Query;
 import cecs429.text.*;
-import cecs429.weight.Default;
 import cecs429.weight.Strategy;
 import cecs429.weight.WeightModeFactory;
 import cecs429.writer.DiskIndexWriter;
-import org.checkerframework.checker.units.qual.A;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -21,6 +18,7 @@ import org.mapdb.Serializer;
 
 
 public class IndexBuilder {
+
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
         Scanner sc = new Scanner(System.in);
         Index index = null;
@@ -240,6 +238,7 @@ public class IndexBuilder {
         String[] str = query.split(" ");
         StringBuilder newQuery = new StringBuilder();
         for(String s : str){
+            s = s.toLowerCase();
             if(s.equals(str[str.length-1])) {
                 if(s.contains("\"")){
                     s = s.substring(0, s.length() -1);
