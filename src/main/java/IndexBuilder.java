@@ -151,21 +151,21 @@ public class IndexBuilder {
             for (String t : token) {
                 totalTokens++;
                 docTokens++;
-                if(docVocabFreq.containsKey(t)){
-                    Integer buff= docVocabFreq.get(t);
-                    buff++;
-                    docVocabFreq.put(t,buff);
-                }
-                else{
-                    docVocabFreq.put(t,1);
-                }
+                String newT = getStem(t);
                 t.replaceAll("\\W", "").toLowerCase();
                 byteSize += t.length();
-                if(!docVocab.contains(getStem(t))){
-                    docVocab.add(getStem(t));
+                if(!docVocab.contains(newT)){
+                    docVocab.add(newT);
                     termCount++;
                 }
-
+                if(docVocabFreq.containsKey(newT)){
+                    Integer buff= docVocabFreq.get(newT);
+                    buff++;
+                    docVocabFreq.put(newT,buff);
+                }
+                else{
+                    docVocabFreq.put(newT,1);
+                }
                 List<String> word = processor.processToken(t);
                 if (word.size() > 0) {
                     for (String s : word) {
