@@ -116,6 +116,7 @@ public class IndexBuilder {
                                 db.close();
                                 break;
                             } else {
+                                query = getStem(query);
                                 Strategy weightMode = weightF.getMode(weight);
                                 topK = score(weightMode, query, dIndex, corpus.getCorpusSize(), 10);
 
@@ -147,11 +148,11 @@ public class IndexBuilder {
             HashMap<String, Integer> docVocabFreq = new HashMap<>();
             Set<String> docTokens = new HashSet<>();
             for (String t : token) {
+                byteSize += t.length();
                 totalTokens.add(t);
                 docTokens.add(t);
-                String newT = getStem(t);
                 t.replaceAll("\\W", "").toLowerCase();
-                byteSize += t.length();
+                String newT = getStem(t);
                 if(docVocabFreq.containsKey(newT)){
                     Integer buff= docVocabFreq.get(newT);
                     buff++;
@@ -209,15 +210,10 @@ public class IndexBuilder {
             }
         }
         for (Integer i : accumulators.keySet()) {
-            Float acc = (float) (accumulators.get(i) / weighMode.getLd(dIndex.getWeight(i).get(0), dIndex.getWeight(i).get(2)));
+            Float acc = accumulators.get(i) / weighMode.getLd(dIndex.getWeight(i).get(0), dIndex.getWeight(i).get(2));
             accumulators.put(i, acc);
         }
-        PriorityQueue<Map.Entry<Integer, Float>> pq = new PriorityQueue<>(k, new Comparator<Map.Entry<Integer, Float>>() {
-            @Override
-            public int compare(Map.Entry<Integer, Float> o1, Map.Entry<Integer, Float> o2) {
-                return o2.getValue().compareTo(o1.getValue());
-            }
-        });
+        PriorityQueue<Map.Entry<Integer, Float>> pq = new PriorityQueue<>(k, (o1, o2) -> o2.getValue().compareTo(o1.getValue()));
         ArrayList<topKPosting> results = new ArrayList<>();
         for (Map.Entry<Integer, Float> entry : accumulators.entrySet()) {
             pq.offer(entry);
