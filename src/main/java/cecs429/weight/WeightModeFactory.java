@@ -5,7 +5,7 @@ import java.util.HashMap;
 public class WeightModeFactory {
     private static HashMap<String, Strategy> modeMap = new HashMap<>();
 
-    WeightModeFactory(){
+    public WeightModeFactory(){
         modeMap.put("1", new Default());
         modeMap.put("2", new TfIdf());
         modeMap.put("3", new OkapiBM25());
@@ -13,7 +13,8 @@ public class WeightModeFactory {
     }
 
     public static Strategy getMode(String mode) {
-        Strategy strategy = modeMap.get(mode);
+
+        Strategy strategy = modeMap.get(mode.toString());
         if (strategy != null) {
             return strategy;
         }

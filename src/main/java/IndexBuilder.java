@@ -101,6 +101,7 @@ public class IndexBuilder {
 
                     case 2:
                         ArrayList<topKPosting> topK;
+                        WeightModeFactory weightF = new WeightModeFactory();
                         System.out.println("Pleas enter the mode: ");
                         System.out.println("1. Default ");
                         System.out.println("2. tf-idf ");
@@ -115,7 +116,7 @@ public class IndexBuilder {
                                 db.close();
                                 break;
                             } else {
-                                Strategy weightMode = WeightModeFactory.getMode(weight);
+                                Strategy weightMode = weightF.getMode(weight);
                                 topK = score(weightMode, query, dIndex, corpus.getCorpusSize(), 10);
 
                             }
