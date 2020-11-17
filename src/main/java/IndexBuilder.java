@@ -123,8 +123,8 @@ public class IndexBuilder {
                             }
                             for (topKPosting tp : topK) {
                                 Reader read = corpus.getDocument(tp.getDocumentId()).getContent();
-                                System.out.print("Title: " + corpus.getDocument(tp.getDocumentId()).getFileTitle());
-                                System.out.println(" Score: " + tp.getScore());
+                                System.out.print(corpus.getDocument(tp.getDocumentId()).getFileTitle());
+                                System.out.println("------" + tp.getScore());
                                 read.close();
                             }
                         }
@@ -246,6 +246,8 @@ public class IndexBuilder {
             else
                 newQuery.append(getStem(s)).append(" ");
         }
+        if(newQuery.charAt(newQuery.length()-1)==' ')
+            return newQuery.toString().substring(0, newQuery.length()-1);
 
         return newQuery.toString();
 
