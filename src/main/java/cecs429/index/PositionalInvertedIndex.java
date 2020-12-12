@@ -8,7 +8,9 @@ import java.util.*;
 public class PositionalInvertedIndex implements Index {
 	private Map<String,ArrayList<Posting>> mIndex= new HashMap<>();
 	private List<String> mVocabulary = new ArrayList<>();
-	
+	private Map<String, Integer> freq = new HashMap<>();
+	private int DocCount = 0;
+
 	/**
 	 * Associates the given documentId and position with the given term in the index.
 	 */
@@ -18,6 +20,12 @@ public class PositionalInvertedIndex implements Index {
 		positionList.add(position);
 		Posting post = new Posting(documentId, positionList);
 		postList.add(post);
+		if(freq.containsKey(term)){
+			Integer frequency = freq.get(term);
+			freq.put(term,frequency+1);
+		}else{
+			freq.put(term,1);
+		}
 		if(mIndex.get(term)==null) {
 			mVocabulary.add(term);
 			mIndex.put(term, postList);
@@ -26,6 +34,10 @@ public class PositionalInvertedIndex implements Index {
 			mIndex.get(term).add(post);
 		else if(mIndex.get(term).get(mIndex.get(term).size() - 1).getDocumentId() == documentId)
 			mIndex.get(term).get(mIndex.get(term).size() - 1).getPosition().add(position);
+	}
+
+	public void addDocumentCount(int count){
+		DocCount = count;
 	}
 	
 	@Override
@@ -45,5 +57,15 @@ public class PositionalInvertedIndex implements Index {
 	public List<String> getVocabulary() {
 		Collections.sort(mVocabulary);
 		return mVocabulary;
+	}
+
+	@Override
+	public Integer getFrequency(String term) {
+		return freq.get(term);
+	}
+
+	@Override
+	public int getDocNum() {
+		return DocCount;
 	}
 }
