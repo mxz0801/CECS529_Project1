@@ -5,11 +5,12 @@ import java.util.*;
  *	Implements Positional Inverted Index 
  */
 
-public class PositionalInvertedIndex implements Index {
+public class ClassificationIndex implements Index {
 	private Map<String,ArrayList<Posting>> mIndex= new HashMap<>();
 	private List<String> mVocabulary = new ArrayList<>();
 	private Map<String, Integer> freq = new HashMap<>();
 	private int DocCount = 0;
+	private int mTokens = 0;
 
 	/**
 	 * Associates the given documentId and position with the given term in the index.
@@ -35,10 +36,6 @@ public class PositionalInvertedIndex implements Index {
 		else if(mIndex.get(term).get(mIndex.get(term).size() - 1).getDocumentId() == documentId)
 			mIndex.get(term).get(mIndex.get(term).size() - 1).getPosition().add(position);
 	}
-
-	public void setDocumentCount(int count){
-		DocCount = count;
-	}
 	
 	@Override
 	public List<Posting> getPostings(String term) {
@@ -59,13 +56,21 @@ public class PositionalInvertedIndex implements Index {
 		return mVocabulary;
 	}
 
-	@Override
-	public Integer getFrequency(String term) {
-		return freq.get(term);
+	public void setDocCount(int count){
+		DocCount = count;
 	}
-
 	@Override
-	public int getDocNum() {
+	public int getDocCount() {
 		return DocCount;
 	}
+
+	public void setTokens(int tokens){
+		mTokens = tokens;
+	}
+	@Override
+	public int getTokens(){
+		return mTokens;
+	}
+
+
 }

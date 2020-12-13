@@ -20,7 +20,6 @@ public interface Index {
 	 */
 	List<String> getVocabulary();
 
-	Integer getFrequency(String term);
-
-	int getDocNum();
+	int getDocCount();
+	int getTokens();
 }
