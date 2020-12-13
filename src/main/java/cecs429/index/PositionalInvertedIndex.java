@@ -36,7 +36,7 @@ public class PositionalInvertedIndex implements Index {
 			mIndex.get(term).get(mIndex.get(term).size() - 1).getPosition().add(position);
 	}
 
-	public void addDocumentCount(int count){
+	public void setDocumentCount(int count){
 		DocCount = count;
 	}
 	

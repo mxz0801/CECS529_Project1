@@ -48,15 +48,19 @@ public class IndexBuilder {
         String choice = sc.nextLine();
         switch (Integer.parseInt(choice)) {
             case 1:
-                System.out.println("Timer started");
                 indexH = indexCorpus(corpusH, wordSets);
                 indexJ = indexCorpus(corpusJ, wordSets);
                 indexM = indexCorpus(corpusM, wordSets);
                 indexD = indexCorpus(corpusD,null);
 
-                scores = Tscore(indexD,indexM,scores);
-                scores = Tscore(indexD,indexH,scores);
-                scores = Tscore(indexD,indexJ,scores);
+                List<Index> categoryIndex = new ArrayList<>();
+                categoryIndex.add(indexM);
+                categoryIndex.add(indexH);
+                categoryIndex.add(indexJ);
+
+                scores = Tscore(wordSets,categoryIndex);
+                //scores = Tscore(wordSets,indexH,scores);
+                //scores = Tscore(wordSets,indexJ,scores);
 
                 for(Map.Entry<String,Float> entry:scores.entrySet()){
                     if(entry.getValue()>0){
@@ -65,72 +69,72 @@ public class IndexBuilder {
                     }
                     pq.offer(entry);
                 }
-                List<String> Tterm = new ArrayList<>();
+                Map<String,Float> Top10Term = new LinkedHashMap<>();
                 for(int i = 0; i< 10; i++){
-                    System.out.println(pq.peek().getValue());
-                    Tterm.add(pq.poll().getKey());
+                    String term = pq.peek().getKey();
+                    Float score = pq.poll().getValue();
+                    Top10Term.put(term,score);
                 }
-                System.out.println(wordSets.size());
-                System.out.println(Tterm.toString());
-                System.out.println(scores.get("upon"));
+
+                System.out.println(Top10Term.toString());
+
 
         }
     }
 
-    private static Map<String, Float> Tscore(Index termIndex, Index categoryIndex, Map<String, Float> scoreMap){
-        List<String> termIndexVocabulary= termIndex.getVocabulary();
-        for(int i = 0; i < termIndexVocabulary.size(); i++){
-            float N11 = 0;
-            float N1x=0;
-            float Nx1=0;
-            float N10=0;
-            float Nx0=0;
-            float N01=0;
-            float N0x=0;
-            float N00=0;
-            float N=0;
-            String term = termIndexVocabulary.get(i);
-            int termDocNum = termIndex.getDocNum();
-            int categoryDocNum = categoryIndex.getDocNum();
-            List<Integer> termID = new ArrayList<>();
+    private static Map<String, Float> Tscore(TreeSet<String> wordSets, List<Index> categoryList){
+        Map<String, Float> scoreMap = new HashMap<>();
+        for(Index category: categoryList){
+            for(String word: wordSets){
+                float N11 = 0;
+                float N1x=0;
+                float Nx1=0;
+                float N10=0;
+                float Nx0=0;
+                float N01=0;
+                float N0x=0;
+                float N00=0;
+                float N=0;
+
+            int categoryDocNum = category.getDocNum();
+            Nx1 = categoryDocNum;
+
             List<Integer> categoryID = new ArrayList<>();
-            for(Posting p:termIndex.getPostings(term)){
-                termID.add(p.getDocumentId());
-            }
-            N1x = termID.size();
-            for(Posting p :categoryIndex.getPostings(term)){
-                categoryID.add(p.getDocumentId());
-            }
-            Nx1 = categoryID.size();
-            for(int t = 0; t<termID.size();t++){
-                for(int c = 0; c<categoryID.size();c++){
-                    if(termID.get(t)==categoryID.get(c)){
-                        N11 = N11+1;
+
+                for(Posting p :category.getPostings(word)){
+                    categoryID.add(p.getDocumentId());
+                }
+                N11 = categoryID.size();
+
+                // calucate the total number of the categories ABC contains term word
+                for(Index cate: categoryList){
+                    for(Posting p :cate.getPostings(word)){
+                        N1x = N1x+1;
                     }
+                    N = cate.getDocNum()+N;
+                }
+
+                N10 = N1x - N11;
+                N01 = Nx1 - N11;
+
+                N00 = N - N10 - N01 - N11;
+                Nx0 = N10 + N00;
+                N0x = N01 + N00;
+
+                float Iscore = (N11/N)*log2((N*N11)/(N1x*Nx1)) + (N10/N)*(log2((N*N10)/(N1x*Nx0))) + (N01/N)*(log2((N*N01)/(N0x*Nx1)))
+                        + (N00/N)*(log2((N*N00)/(N0x*Nx0)));
+                if(Float.isNaN(Iscore)){
+                    Iscore = 0;
+                }
+                if(scoreMap.containsKey(word)){
+                    float s = scoreMap.get(word);
+                    scoreMap.put(word,Math.max(s,Iscore));
+                }else{
+                    scoreMap.put(word,Iscore);
                 }
             }
-
-            N10 = termID.size()-N11;
-            N01 = categoryID.size()-N11;
-            N = termDocNum + categoryDocNum;
-            N00 = N - N10 - N01 - N11;
-            Nx0 = N10 + N00;
-            N0x = N01 + N00;
-
-            float Iscore = (N11/N)*log2((N*N11)/(N1x*Nx1)) + (N10/N)*(log2((N*N10)/(N1x*Nx0))) + (N01/N)*(log2((N*N01)/(N0x*Nx1)))
-                    + (N00/N)*(log2((N*N00)/(N0x*Nx0)));
-            if(Iscore > 0){
-
-            }else{
-                Iscore = 0;
-            }
-            if(scoreMap.containsKey(term)){
-                float s = scoreMap.get(term);
-                scoreMap.put(term,Math.max(s,Iscore));
-            }else{
-                scoreMap.put(term,Iscore);
-            }
         }
+
         return scoreMap;
     }
 
@@ -141,13 +145,12 @@ public class IndexBuilder {
     private static Index indexCorpus(DocumentCorpus corpus, TreeSet<String> wordSets) throws IOException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
         PositionalInvertedIndex index = new PositionalInvertedIndex();
-        int DocumentCount = 0;
         for (Document sDocument : corpus.getDocuments()) {
-            DocumentCount++;
             TokenStream stream = new EnglishTokenStream(sDocument.getContent());
             Iterable<String> token = stream.getTokens();
             int position = 1;
             for (String t : token) {
+                t=t.replaceAll("\\W", "").toLowerCase();
                 List<String> word = processor.processToken(getStem(t));
                 if (word.size() > 0) {
                     for (String s : word) {
@@ -160,7 +163,7 @@ public class IndexBuilder {
                 }
             }
         }
-        index.addDocumentCount(DocumentCount);
+        index.setDocumentCount(corpus.getCorpusSize());
         return index;
     }
 
