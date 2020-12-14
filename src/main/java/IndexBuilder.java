@@ -19,6 +19,7 @@ public class IndexBuilder {
         Index indexH;
         Index indexJ;
         Index indexM;
+        Index indexD;
 
         System.out.println("Please enter the directory of the file: ");
         String directory = sc.nextLine();
@@ -38,6 +39,7 @@ public class IndexBuilder {
         indexH = indexCorpus(corpusH, wordSets);
         indexJ = indexCorpus(corpusJ, wordSets);
         indexM = indexCorpus(corpusM, wordSets);
+        indexD = indexCorpus(corpusD, null);
 
 
         Map<String, Index> categoryIndex = new HashMap<>();
@@ -83,14 +85,48 @@ public class IndexBuilder {
         List<Float> centroidJ = getCentroid(wordSets, indexJ, corpusJ);
         List<Float> centroidM = getCentroid(wordSets, indexM, corpusM);
 
-        System.out.println("Vocabulary list:");
-        System.out.println(wordSets.toString());
-
-        for (int i = 0; i < 10; i++) {
-            System.out.println(centroidM.get(i));
+        List<List<Float>> centroidD = new ArrayList<>();
+        for (int d = 0; d < corpusD.getCorpusSize(); d++) {
+            List<Float> centroid = getDocCentroid(wordSets, indexD, corpusD.getDocument(d));
+            centroidD.add(centroid);
         }
 
 
+
+
+
+        System.out.println("Vocabulary list:");
+        System.out.println(wordSets.toString());
+
+//        for (int i = 0; i < 30; i++) {
+//            System.out.println(centroidM.get(i));
+//        }
+        List<Float> centroid52 = getDocCentroid(wordSets, indexD, corpusD.getDocument(3));
+        System.out.println("the first 30 components (alphabetically) of the normalized vector for the document");
+        for (int i = 0; i < 30; i++) {
+            System.out.println(centroid52.get(i));
+        }
+        //printRocchio(centroidH,centroidM,centroidJ,centroidD,corpusD);
+    }
+
+    private static List<Float> getDocCentroid(TreeSet<String> wordSets, Index index, Document document) {
+        List<Float> result = new ArrayList<>();
+        for (String s : wordSets) {
+            if (index.getPostings(s) == null) {
+                result.add(0.0F);
+            } else {
+                float totalVd = 0.0F;
+                float Ld = index.getLd(document.getId());
+                Map<String, Integer> WdtMap = index.getWdtMap(document.getId());
+                Integer freqs = WdtMap.get(s);
+                if (freqs != null) {
+                    float Wdt = (float) (1 + Math.log(freqs));
+                    totalVd = (Wdt / Ld);
+                }
+                result.add(totalVd);
+            }
+        }
+        return result;
     }
 
     private static List<Float> getCentroid(TreeSet<String> wordSets, Index index, DocumentCorpus corpus) {
@@ -106,7 +142,7 @@ public class IndexBuilder {
                     Integer freqs = WdtMap.get(s);
                     if (freqs != null) {
                         float Wdt = (float) (1 + Math.log(freqs));
-                        totalVd = (Wdt/Ld) + totalVd;
+                        totalVd = (Wdt / Ld) + totalVd;
                     }
                 }
                 result.add(totalVd / corpus.getCorpusSize());
@@ -169,7 +205,6 @@ public class IndexBuilder {
 
         return scoreMap;
     }
-
 
     private static float log2(float num) {
         return (float) (Math.log(num) / Math.log(2));
@@ -271,10 +306,37 @@ public class IndexBuilder {
         return index;
     }
 
-
     public static String getStem(String input) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
         ImprovedTokenProcessor processor2 = new ImprovedTokenProcessor();
         return processor2.stem(input);
+    }
+
+    private static void printRocchio(List<Float> centroidH, List<Float> centroidM, List<Float> centroidJ, List<List<Float>> centroidD, DocumentCorpus corpusD) {
+        float tempH = 0, tempM = 0, tempJ = 0;
+        for (int d = 0; d < centroidD.size(); d++) {
+
+            List<Float> centroid = centroidD.get(d);
+            for (int i = 0; i < centroid.size(); i++) {
+                tempH += (float) Math.pow((centroid.get(i) - centroidH.get(i)), 2);
+                tempM += (float) Math.pow((centroid.get(i) - centroidM.get(i)), 2);
+                tempJ += (float) Math.pow((centroid.get(i) - centroidJ.get(i)), 2);
+            }
+            tempH = (float) Math.sqrt(tempH);
+            tempM = (float) Math.sqrt(tempM);
+            tempJ = (float) Math.sqrt(tempJ);
+            System.out.println("Dist to /hamilton for doc " + corpusD.getDocument(d).getFileTitle() + " is " + tempH);
+            System.out.println("Dist to /madison  for doc " + corpusD.getDocument(d).getFileTitle() + " is " + tempM);
+            System.out.println("Dist to /jay for doc " + corpusD.getDocument(d).getFileTitle() + " is " + tempJ);
+            float min = Math.min(Math.min(tempH, tempM), tempJ);
+            if (min == tempH) {
+                System.out.println("Low distance for " + corpusD.getDocument(d).getFileTitle() + " is hamilton");
+            } else if (min == tempM) {
+                System.out.println("Low distance for " + corpusD.getDocument(d).getFileTitle() + " is madison ");
+            } else {
+                System.out.println("Low distance for " + corpusD.getDocument(d).getFileTitle() + " is jay");
+            }
+            System.out.println();
+        }
     }
 
 }
