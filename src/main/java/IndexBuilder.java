@@ -44,6 +44,11 @@ public class IndexBuilder {
         categoryIndex.put("JAY", indexJ);
         categoryIndex.put("MADISON", indexM);
 
+        Map<String, DocumentCorpus> categoryCorpus = new HashMap<>();
+        categoryCorpus.put("HAMILTON", corpusH);
+        categoryCorpus.put("JAY", corpusJ);
+        categoryCorpus.put("MADISON", corpusM);
+
         termScores = scoreTerms(wordSets, categoryIndex);
         for (Map.Entry<String, Float> entry : termScores.entrySet()) {
             if (entry.getValue() <= 0) {
@@ -71,6 +76,16 @@ public class IndexBuilder {
             for (String t : token)
                 vocab.add(t.replaceAll("\\W", "").toLowerCase());
             System.out.println(doc.getFileTitle() + " is mostly likely to be in category " + calculateClass(vocab, categoryIndex, termPtcScore));
+        }
+        List<Float> centroidH;
+        List<Float> centroidJ;
+        List<Float> centroidM;
+        for(String s : wordSets){
+            for(Index index : categoryIndex.values()){
+
+
+            }
+
         }
 
 
@@ -196,6 +211,8 @@ public class IndexBuilder {
             for (String t : token) {
                 totalTokens.add(t);
                 t = t.replaceAll("\\W", "").toLowerCase();
+                if(t.length()==0)
+                    continue;
                 List<String> word = processor.processToken(getStem(t));
                 if (word.size() > 0) {
                     for (String s : word) {

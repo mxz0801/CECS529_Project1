@@ -72,5 +72,10 @@ public class ClassificationIndex implements Index {
 		return mTokens;
 	}
 
+	@Override
+	public int getFrequency(String term) {
+		return freq.get(term);
+	}
+
 
 }
