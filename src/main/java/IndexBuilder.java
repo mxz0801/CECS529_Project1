@@ -1,8 +1,8 @@
 import cecs429.documents.DirectoryCorpus;
 import cecs429.documents.Document;
 import cecs429.documents.DocumentCorpus;
-import cecs429.index.Index;
 import cecs429.index.ClassificationIndex;
+import cecs429.index.Index;
 import cecs429.index.Posting;
 import cecs429.text.EnglishTokenStream;
 import cecs429.text.ImprovedTokenProcessor;
@@ -39,6 +39,7 @@ public class IndexBuilder {
         indexJ = indexCorpus(corpusJ, wordSets);
         indexM = indexCorpus(corpusM, wordSets);
 
+
         Map<String, Index> categoryIndex = new HashMap<>();
         categoryIndex.put("HAMILTON", indexH);
         categoryIndex.put("JAY", indexJ);
@@ -68,6 +69,7 @@ public class IndexBuilder {
                     System.out.println(entry.toString());
             }
         }
+        System.out.println();
         List<Map<String, Float>> termPtcScore = calculatePtc(categoryIndex, Top50Term.keySet());
         for (Document doc : corpusD.getDocuments()) {
             Set<String> vocab = new HashSet<>();
@@ -77,18 +79,40 @@ public class IndexBuilder {
                 vocab.add(t.replaceAll("\\W", "").toLowerCase());
             System.out.println(doc.getFileTitle() + " is mostly likely to be in category " + calculateClass(vocab, categoryIndex, termPtcScore));
         }
-        List<Float> centroidH;
-        List<Float> centroidJ;
-        List<Float> centroidM;
-        for(String s : wordSets){
-            for(Index index : categoryIndex.values()){
+        List<Float> centroidH = getCentroid(wordSets,indexH,corpusH);
+        List<Float> centroidJ = getCentroid(wordSets,indexJ,corpusJ);
+        List<Float> centroidM = getCentroid(wordSets,indexM,corpusM);
 
+        System.out.println(wordSets.toString());
 
-            }
-
+        for(int i = 0; i<11;i++){
+            System.out.println(centroidH.get(i));
         }
 
 
+    }
+
+    private static List<Float> getCentroid(TreeSet<String> wordSets, Index index, DocumentCorpus corpus) {
+        List<Float> result = new ArrayList<>();
+        for (String s : wordSets) {
+            if (index.getPostings(s) == null) {
+                result.add(0.0F);
+            }else{
+                float totalVd = 0.0F;
+                for(Document sDocument : corpus.getDocuments()){
+                    float Ld = index.getLd(sDocument.getId());
+                    Map<String, Integer> WdtMap = index.getWdtMap(sDocument.getId());
+                    Integer Wdt = WdtMap.get(s);
+                    if(Wdt == null){
+                        totalVd +=0;
+                    }else{
+                        totalVd = (Wdt/Ld) + totalVd;
+                    }
+                }
+                result.add(totalVd/corpus.getCorpusSize());
+            }
+        }
+        return result;
     }
 
     private static Map<String, Float> scoreTerms(TreeSet<String> wordSets, Map<String, Index> categoryIndex) {
@@ -189,7 +213,7 @@ public class IndexBuilder {
             resultMap.put(entry.getKey(), result);
             categoryId++;
         }
-        Float maximum = (float) -999;
+        float maximum = -Float.MAX_VALUE;
         String category = null;
         for (Map.Entry<String, Float> entry : resultMap.entrySet()) {
             if (entry.getValue() > maximum) {
@@ -203,6 +227,7 @@ public class IndexBuilder {
     private static Index indexCorpus(DocumentCorpus corpus, TreeSet<String> wordSets) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
         ImprovedTokenProcessor processor = new ImprovedTokenProcessor();
         ClassificationIndex index = new ClassificationIndex();
+        HashMap<String, Integer> docVocabFreq = new HashMap<>();
         Set<String> totalTokens = new HashSet<>();
         for (Document sDocument : corpus.getDocuments()) {
             TokenStream stream = new EnglishTokenStream(sDocument.getContent());
@@ -211,12 +236,22 @@ public class IndexBuilder {
             for (String t : token) {
                 totalTokens.add(t);
                 t = t.replaceAll("\\W", "").toLowerCase();
-                if(t.length()==0)
+                if (t.length() == 0)
                     continue;
-                List<String> word = processor.processToken(getStem(t));
+                String newT = getStem(t);
+                List<String> word = processor.processToken(newT);
+
                 if (word.size() > 0) {
                     for (String s : word) {
                         if (wordSets != null) {
+                            if(docVocabFreq.containsKey(s)){
+                                Integer buff= docVocabFreq.get(s);
+                                buff++;
+                                docVocabFreq.put(s,buff);
+                            }
+                            else{
+                                docVocabFreq.put(s,1);
+                            }
                             wordSets.add(s);
                         }
                         index.addTerm(s, sDocument.getId(), position);
@@ -224,6 +259,14 @@ public class IndexBuilder {
                     position++;
                 }
             }
+            float Ld = 0;
+            for(float ld : docVocabFreq.values()){
+                float wdt = (float) (1 + Math.log(ld));
+                Ld += Math.pow(wdt,2);
+            }
+            Ld = (float) Math.sqrt(Ld);
+            index.addWdtMap(sDocument.getId(),docVocabFreq);
+            index.addLd(sDocument.getId(),Ld);
         }
         index.setDocCount(corpus.getCorpusSize());
         index.setTokens(totalTokens.size());

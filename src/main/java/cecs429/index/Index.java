@@ -2,6 +2,7 @@ package cecs429.index;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * An Index can retrieve postings for a term from a data structure associating terms and the documents
@@ -23,4 +24,8 @@ public interface Index {
 	int getDocCount();
 	int getTokens();
 	int getFrequency(String term);
+
+	float getLd(int docId);
+
+	Map<String,Integer> getWdtMap(int docId);
 }

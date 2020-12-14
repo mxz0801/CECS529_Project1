@@ -9,6 +9,8 @@ public class ClassificationIndex implements Index {
 	private Map<String,ArrayList<Posting>> mIndex= new HashMap<>();
 	private List<String> mVocabulary = new ArrayList<>();
 	private Map<String, Integer> freq = new HashMap<>();
+	private Map<Integer,Float> LdMap = new HashMap<>();
+	private Map<Integer, Map<String,Integer>> WdtMap = new HashMap<>();
 	private int DocCount = 0;
 	private int mTokens = 0;
 
@@ -36,7 +38,21 @@ public class ClassificationIndex implements Index {
 		else if(mIndex.get(term).get(mIndex.get(term).size() - 1).getDocumentId() == documentId)
 			mIndex.get(term).get(mIndex.get(term).size() - 1).getPosition().add(position);
 	}
-	
+
+	public void addLd(int docId, float weight){
+		LdMap.put(docId,weight);
+	}
+
+	@Override
+	public float getLd(int docId){
+		return LdMap.get(docId);
+	}
+
+	@Override
+	public Map<String, Integer> getWdtMap(int docId) {
+		return WdtMap.get(docId);
+	}
+
 	@Override
 	public List<Posting> getPostings(String term) {
 		ArrayList<Posting> p = new ArrayList<>();
@@ -77,5 +93,8 @@ public class ClassificationIndex implements Index {
 		return freq.get(term);
 	}
 
+	public void addWdtMap(int id, HashMap<String, Integer> docVocabFreq) {
+		WdtMap.put(id,docVocabFreq);
+	}
 
 }
