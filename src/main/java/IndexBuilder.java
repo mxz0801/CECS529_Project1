@@ -97,7 +97,7 @@ public class IndexBuilder {
             centroidD.add(centroid);
         }
         System.out.println("--------------------------------------------------------");
-        List<Float> centroid52 = getDocCentroid(wordSets, indexD, corpusD.getDocument(0));
+        List<Float> centroid52 = getDocCentroid(wordSets, indexD, corpusD.getDocument(3));
         System.out.println("the first 30 components (alphabetically) of the normalized vector for the document 52");
         for (int i = 0; i < 30; i++) {
             System.out.println(centroid52.get(i));
@@ -212,12 +212,19 @@ public class IndexBuilder {
         for (Index index : categoryList.values()) {
             Map<String, Float> termScore = new HashMap<>();
             float score;
+            int indexToken = 0;
+            for(String sFreq: top50Terms){
+                if(index.getFrequency(sFreq) !=null ){
+                    indexToken+=index.getFrequency(sFreq);
+                }
+            }
             for (String s : top50Terms) {
                 int termCount = 0;
                 for (Posting p : index.getPostings(s)) {
                     termCount = termCount + p.getPosition().size();
                 }
-                score = (float) (termCount + 1) / (index.getTokens() + 50);
+
+                score = (float) (termCount + 1) / (indexToken + 50);
                 termScore.put(s, score);
             }
             result.add(termScore);

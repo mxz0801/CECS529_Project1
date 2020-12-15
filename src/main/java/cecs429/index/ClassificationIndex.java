@@ -89,7 +89,7 @@ public class ClassificationIndex implements Index {
 	}
 
 	@Override
-	public int getFrequency(String term) {
+	public Integer getFrequency(String term) {
 		return freq.get(term);
 	}
 

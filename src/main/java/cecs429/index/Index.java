@@ -23,7 +23,7 @@ public interface Index {
 
 	int getDocCount();
 	int getTokens();
-	int getFrequency(String term);
+	Integer getFrequency(String term);
 
 	float getLd(int docId);
 
