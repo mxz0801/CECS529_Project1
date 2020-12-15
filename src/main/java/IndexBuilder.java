@@ -60,6 +60,10 @@ public class IndexBuilder {
             pq.offer(entry);
         }
 
+        System.out.println("Vocabulary list:");
+        System.out.println(wordSets.toString());
+        System.out.println();
+
         Map<String, Float> Top50Term = new LinkedHashMap<>();
         for (int i = 0; i < 50; i++) {
             assert pq.peek() != null;
@@ -79,7 +83,9 @@ public class IndexBuilder {
             Iterable<String> token = stream.getTokens();
             for (String t : token)
                 vocab.add(t.replaceAll("\\W", "").toLowerCase());
-            System.out.println(doc.getFileTitle() + " is mostly likely to be in category " + calculateClass(vocab, categoryIndex, termPtcScore));
+            String name = calculateClass(vocab, categoryIndex, termPtcScore);
+            System.out.println(doc.getFileTitle() + " is mostly likely to be in category " + name);
+            System.out.println();
         }
         List<Float> centroidH = getCentroid(wordSets, indexH, corpusH);
         List<Float> centroidJ = getCentroid(wordSets, indexJ, corpusJ);
@@ -90,23 +96,13 @@ public class IndexBuilder {
             List<Float> centroid = getDocCentroid(wordSets, indexD, corpusD.getDocument(d));
             centroidD.add(centroid);
         }
-
-
-
-
-
-        System.out.println("Vocabulary list:");
-        System.out.println(wordSets.toString());
-
+//        List<Float> centroid52 = getDocCentroid(wordSets, indexD, corpusD.getDocument(1));
+//        System.out.println("the first 30 components (alphabetically) of the normalized vector for the document 52");
 //        for (int i = 0; i < 30; i++) {
-//            System.out.println(centroidM.get(i));
+//            System.out.println(centroid52.get(i));
 //        }
-        List<Float> centroid52 = getDocCentroid(wordSets, indexD, corpusD.getDocument(3));
-        System.out.println("the first 30 components (alphabetically) of the normalized vector for the document");
-        for (int i = 0; i < 30; i++) {
-            System.out.println(centroid52.get(i));
-        }
-        //printRocchio(centroidH,centroidM,centroidJ,centroidD,corpusD);
+        System.out.println("----------------------------------------------------------------");
+        printRocchio(centroidH,centroidM,centroidJ,centroidD,corpusD);
     }
 
     private static List<Float> getDocCentroid(TreeSet<String> wordSets, Index index, Document document) {
@@ -251,6 +247,7 @@ public class IndexBuilder {
         float maximum = -Float.MAX_VALUE;
         String category = null;
         for (Map.Entry<String, Float> entry : resultMap.entrySet()) {
+            System.out.println("Bayesian classification score for " +entry.getKey() + " is " + entry.getValue());
             if (entry.getValue() > maximum) {
                 maximum = entry.getValue();
                 category = entry.getKey();
