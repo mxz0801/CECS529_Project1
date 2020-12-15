@@ -47,7 +47,7 @@ public class IndexBuilder {
         categoryIndex.put("JAY", indexJ);
         categoryIndex.put("MADISON", indexM);
 
-        Map<String, DocumentCorpus> categoryCorpus = new HashMap<>();
+        Map<String, DocumentCorpus> categoryCorpus = new TreeMap<>();
         categoryCorpus.put("HAMILTON", corpusH);
         categoryCorpus.put("JAY", corpusJ);
         categoryCorpus.put("MADISON", corpusM);
@@ -96,11 +96,12 @@ public class IndexBuilder {
             List<Float> centroid = getDocCentroid(wordSets, indexD, corpusD.getDocument(d));
             centroidD.add(centroid);
         }
-//        List<Float> centroid52 = getDocCentroid(wordSets, indexD, corpusD.getDocument(1));
-//        System.out.println("the first 30 components (alphabetically) of the normalized vector for the document 52");
-//        for (int i = 0; i < 30; i++) {
-//            System.out.println(centroid52.get(i));
-//        }
+        System.out.println("--------------------------------------------------------");
+        List<Float> centroid52 = getDocCentroid(wordSets, indexD, corpusD.getDocument(0));
+        System.out.println("the first 30 components (alphabetically) of the normalized vector for the document 52");
+        for (int i = 0; i < 30; i++) {
+            System.out.println(centroid52.get(i));
+        }
         System.out.println("----------------------------------------------------------------");
         printRocchio(centroidH,centroidM,centroidJ,centroidD,corpusD);
     }
